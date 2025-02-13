@@ -8,7 +8,7 @@ dotenv.config();
 
 const basename = _basename(__filename);
 const env = process.env.NODE_ENV;
-const config = require("../config/config.cjs")[env];
+const config = require("../config/config.js")[env];
 
 const db = {};
 
