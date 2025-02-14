@@ -8,6 +8,7 @@ import CategoriesRouter from './categoriesRouter.js';
 import mission from './missionRouter.js';
 import appoitment from './appoitmentRouter.js';
 import notification from './notificationRouter.js';
+import statistics from './statisticsRoutes.js';
 
 const router = express.Router();
 
@@ -19,6 +20,7 @@ router.use('/categories', CategoriesRouter);
 router.use('/mission', mission);
 router.use('/appoitment', appoitment);
 router.use('/notification', notification);
+router.use('/statistics', statistics);
 
 
 export default router;

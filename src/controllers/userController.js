@@ -146,7 +146,14 @@ export const addUser = async (req, res) => {
         message: "email already exist",
       });
     }
-    req.body.restaurents=req.user.restaurents;
+
+    const phoneExist = await getUserByPhone(req.body.phone);
+    if (phoneExist) {
+      return res.status(400).json({
+        success: false,
+        message: "phone number has been used",
+      });
+    }
 
     // generate password
     const password = `D${Math.random().toString(36).slice(-8)}`;
@@ -161,7 +168,7 @@ export const addUser = async (req, res) => {
     // send email
     await new Email(newUser).sendAccountAdded();
 
-    const notification = await createNotification({ userID:newUser.id, message:"your account has been created successfull", type:'account', isRead: false });
+    const notification = await createNotification({ userID:newUser.id,title:"Account created for you", message:"your account has been created successfull", type:'account', isRead: false });
     
 
     return res.status(201).json({
@@ -258,6 +265,10 @@ export const updateOneUser = async (req, res) => {
     }
     console.log(req.body.image)
     const user = await updateUser(req.params.id, req.body);
+    if(req.params.id!=req.user.id){
+      const notification = await createNotification({ userID:req.params.id,title:"your  account has been updated", message:"your account has been edited by admin", type:'account', isRead: false });
+    
+    }
     return res.status(200).json({
       success: true,
       message: "User updated successfully",

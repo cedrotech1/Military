@@ -8,7 +8,7 @@ class Email {
     this.firstname = user.firstname;
     this.password = user.password;
     this.email = user.email;
-    this.from = 'ecardmanagementsystem@gmail.com'; // Hardcoded sender address
+    this.from = 'cedrickhakuzimana@gmail.com'; // Hardcoded sender address
     this.url = url;
     this.message = claim ? claim.message : '';  // Default empty message if not provided
     this.missionname = claim ? claim.missionname : '';
@@ -23,8 +23,8 @@ class Email {
     return nodemailer.createTransport({
       service: 'gmail', // or your email service provider
       auth: {
-        user: 'ecardmanagementsystem@gmail.com', // Hardcoded email user
-        pass: 'nylc dcjp lkak acew', // Hardcoded email password or app password
+        user: 'cedrickhakuzimana@gmail.com', // Hardcoded email user
+        pass: 'tokw jgsr fsgg pozg', // Hardcoded email password or app password
       },
     });
   }

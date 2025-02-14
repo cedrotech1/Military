@@ -25,6 +25,7 @@ const options = {
     { name: "mission", description: "mission" },
     { name: "appoitment", description: "appoitment" },
     { name: "notification", description: "notification" },
+    { name: "statistics", description: "statistics" },
 
   ],
   paths: {
@@ -1725,6 +1726,33 @@ const options = {
         responses: {
           200: {
             description: "categories disactivated successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+
+    "/api/v1/statistics/": {
+      get: {
+        tags: ["statistics"],
+        summary: "Get a statistics",
+        description: "Get a statistics",
+        operationId: "getOnestatistics",
+    
+        responses: {
+          200: {
+            description: "statistics deleted successfully",
           },
           400: {
             description: "Bad request",

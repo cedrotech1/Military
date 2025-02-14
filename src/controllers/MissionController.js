@@ -16,6 +16,7 @@ import imageUploader from "../helpers/imageUplouder.js";
 
 export const addMissionController = async (req, res) => {
   try {
+    let role=req.user.role;
 
 
     if (role === "user") {
