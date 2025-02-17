@@ -6,30 +6,58 @@ module.exports = {
       {
         userID: 1, // assuming user with ID 1 exists
         title: 'profile changed',
-        message: 'Your appointment is scheduled for tomorrow at 10:00 AM.',
+        message: 'Your profile has been changed, they added profile detail for you',
         type: 'alert',
         isRead: false, // Unread notification
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
-        userID: 2, // assuming user with ID 2 exists
-        title: 'profile changed',
-        message: 'Your mission has been completed successfully.',
-        type: 'info',
-        isRead: true, // Read notification
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        userID: 3, // assuming user with ID 3 exists
-        title: 'profile changed',
-        message: 'You have a new review on your profile.',
-        type: 'info',
+        userID: 1, // assuming user with ID 1 exists
+        title: 'Appointment changed',
+        message: 'Your appointment is changed from active to disactive',
+        type: 'alert',
         isRead: false, // Unread notification
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      {
+        userID: 2, // assuming user with ID 1 exists
+        title: 'Your appoitment ',
+        message: 'Your appointment is has been deleted !',
+        type: 'alert',
+        isRead: false, // Unread notification
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        userID: 2, // assuming user with ID 1 exists
+        title: 'profile changed',
+        message: 'Your profile has been changed, they added profile detail for you',
+        type: 'alert',
+        isRead: false, // Unread notification
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        userID: 3, // assuming user with ID 1 exists
+        title: 'Appointment changed',
+        message: 'Your appointment is changed from active to disactive',
+        type: 'alert',
+        isRead: false, // Unread notification
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        userID: 3, // assuming user with ID 1 exists
+        title: 'Your appoitment ',
+        message: 'Your appointment is has been deleted !',
+        type: 'alert',
+        isRead: false, // Unread notification
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+     
     ]);
   },
 

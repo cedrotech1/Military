@@ -16,7 +16,16 @@ export const getOneMissionWithDetails = async (id) => {
         },
         {
           model:Appointments,
-          as:"appointments"
+          as:"appointments",
+          include: [
+          
+            {
+              model:users,
+              as:"user"
+            },
+          
+    
+          ],
         }
 
       ],
@@ -40,7 +49,16 @@ export const getAllMissiones = async () => {
         },
         {
           model:Appointments,
-          as:"appointments"
+          as:"appointments",
+          include: [
+          
+            {
+              model:users,
+              as:"user"
+            },
+          
+    
+          ],
         }
 
       ],

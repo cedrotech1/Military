@@ -48,7 +48,10 @@ export const addProfileDetailsController = async (req, res) => {
         console.error('Error uploading image:', error);
         // Handle error appropriately
       }
+    }else{
+      req.body.image = null;
     }
+
 
     
        

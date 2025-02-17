@@ -17,16 +17,29 @@ export const getNotificationsController = async (req, res) => {
       return res.status(404).json({ 
         success: false, 
         message: "No notifications found",
-        notifications:[]
-
+        unreadCount: 0,
+        notifications: []
       });
     }
 
-    return res.status(200).json({ success: true, message: "Notifications retrieved", data: notifications });
+    // Count unread notifications
+    const unreadCount = notifications.filter(notification => !notification.isRead).length;
+
+    return res.status(200).json({ 
+      success: true, 
+      message: "Notifications retrieved", 
+      unreadCount,  // Include unread count in response
+      data: notifications 
+    });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    return res.status(500).json({ 
+      success: false, 
+      message: "Server error", 
+      error: error.message 
+    });
   }
 };
+
 
 // Create a new notification
 export const createNotificationController = async (req, res) => {

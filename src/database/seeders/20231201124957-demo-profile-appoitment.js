@@ -6,7 +6,7 @@ module.exports = {
       {
         missionID: 1, // assuming mission with ID 1 exists
         userID: 1, // assuming user with ID 1 exists
-        status: 'pending',
+        status: 'active',
         assignedBY: 2, // assuming user with ID 2 exists
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -14,7 +14,7 @@ module.exports = {
       {
         missionID: 2, // assuming mission with ID 2 exists
         userID: 2, // assuming user with ID 2 exists
-        status: 'confirmed',
+        status: 'inactive',
         assignedBY: 1, // assuming user with ID 1 exists
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -22,7 +22,7 @@ module.exports = {
       {
         missionID: 3, // assuming mission with ID 3 exists
         userID: 3, // assuming user with ID 3 exists
-        status: 'completed',
+        status: 'closed',
         assignedBY: 3, // assuming user with ID 3 exists
         createdAt: new Date(),
         updatedAt: new Date(),

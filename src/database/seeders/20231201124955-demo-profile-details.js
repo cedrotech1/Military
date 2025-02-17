@@ -6,9 +6,10 @@ module.exports = {
       {
         userID: 1, // assuming user with ID 1 exists
         categoryID: 1, // assuming category with ID 1 exists
-        name: 'Profile Picture',
+        name: 'Profile Picture', 
+        image: null,
         description:'descrpition',
-        image: 'http://res.cloudinary.com/dzl8xve8s/image/upload/v1724766686/Card/profilepic.png',
+      
         status: "active",
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -16,8 +17,8 @@ module.exports = {
       {
         userID: 2, // assuming user with ID 2 exists
         categoryID: 2, // assuming category with ID 2 exists
-        name: 'Username',
-        description:'descrpition',
+        name: 'certificate',
+        description:'certificate in software development',
         image: null,
         status: "active",
         createdAt: new Date(),
@@ -26,8 +27,8 @@ module.exports = {
       {
         userID: 3, // assuming user with ID 3 exists
         categoryID: 3, // assuming category with ID 3 exists
-        name: 'Security Question',
-        description:'descrpition',
+        name: 'skills',
+        description:'skills in software development',
         image: null,
         status: "active",
         createdAt: new Date(),

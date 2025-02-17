@@ -25,8 +25,8 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
-        firstname: "John",
-        lastname: "Doe",
+        firstname: "Uwase",
+        lastname: "karara",
         email: "officer@gmail.com",
         phone: "0781234567",
         role: "Commander-Officer",
@@ -39,8 +39,8 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
-        firstname: "Jane",
-        lastname: "Doe",
+        firstname: "cedrick",
+        lastname: "cedro",
         email: "user@gmail.com",
         phone: "0787654321",
         role: "user",

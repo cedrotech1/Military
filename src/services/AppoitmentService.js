@@ -5,8 +5,7 @@ const Appoitment = db["Appointments"];
 const Notifications = db["Notifications"];
 const Missions = db["Missions"];
 const ProfileCategories = db["ProfileCategories"];
-const Appoitments = db["Appoitments"];
-const Appointments = db["Appointments"];
+
 export const getOneAppoitmentWithDetails = async (id) => {
   try {
     const Info = await Appoitment.findAll({
