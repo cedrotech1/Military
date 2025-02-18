@@ -7,7 +7,7 @@ const ProfileCategories = db["ProfileCategories"];
 const Missions = db["Missions"];
 const Appointments = db["Appointments"];
 
-import Sequelize from "sequelize";
+import Sequelize, { where } from "sequelize";
 
 export const getUsers = async () => {
   try {
@@ -48,6 +48,48 @@ export const getUsers = async () => {
     throw error; // Re-throw the error to be handled by the caller
   }
 };
+
+export const getUsers1 = async () => {
+  try {
+    const allUsers = await users.findAll({
+      where:{role:'user'},
+      attributes: { exclude: ["password"] },
+      include: [
+        {
+          model: ProfileDetails,
+          as: "ProfileDetails",  
+          include: [
+            {
+              model: ProfileCategories,
+              as: "category", 
+            },
+          ],
+
+        },
+        {
+          model: Missions,
+          as: "missions",
+        },
+        {
+          model: Appointments,
+          as: "appointments",
+        },
+      
+        {
+          model: Notifications,
+          as: "notifications",
+        }
+        
+      ],
+    });
+
+    return allUsers;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw error; // Re-throw the error to be handled by the caller
+  }
+};
+
 
 
 
@@ -146,6 +188,9 @@ export const getUserByEmail = async (email) => {
     throw error;
   }
 };
+
+
+
 
 
 export const getUserByPhone = async (phone) => {

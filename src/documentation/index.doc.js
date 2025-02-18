@@ -137,6 +137,31 @@ const options = {
         },
       },
     },
+    "/api/v1/users/formission": {
+      get: {
+        tags: ["Users"],
+        summary: "Get all users for mission",
+        description: "Get all users",
+        operationId: "getAllUsersForMission",
+        responses: {
+          200: {
+            description: "User retrieved successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
 
     "/api/v1/users/{id}": {
       get: {

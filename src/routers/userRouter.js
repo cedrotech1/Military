@@ -11,10 +11,12 @@ import {
   changePassword,
   checkEmail,
   checkCode,
-  ResetPassword
+  ResetPassword,
+  getUsersWithoutAppointments
 } from '../controllers/userController.js';
 import { protect } from '../middlewares/protect.js';
 const router = express.Router();
+router.get('/formission', protect, getUsersWithoutAppointments);
 router.get('/', protect, getAllUsers);
 router.get('/:id', protect, getOneUser);
 router.post('/addUser', protect, addUser);

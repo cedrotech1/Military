@@ -13,7 +13,8 @@ import {
   getallUsers,
   getUserByPhone,
   getUserByCode,
-  updateUserCode
+  updateUserCode,
+  getUsers1
 } from "../services/userService.js";
 import {
   createNotification,
@@ -201,11 +202,12 @@ export const getAllUsers = async (req, res) => {
 
     if (req.user.role === "admin") {
       // Fetch users for the specific restaurant admin
-      filteredusers = users.filter(user => user.role === "Commander-Officer" || user.role === "user" || user.id != req.user.id );
+      filteredusers = users.filter(user => user.id != req.user.id);
+    
     } 
     else if (req.user.role === "Commander-Officer") {
       // Fetch all users
-      filteredusers = users.filter(user => user.role === "user");
+      filteredusers = users.filter(user => user.role === "user" || user.id != req.user.id && user.role != "admin");
     }
       
     return res.status(200).json({
@@ -219,6 +221,31 @@ export const getAllUsers = async (req, res) => {
       message: "Something went wrong",
       error,
     });
+  }
+};
+
+export const getUsersWithoutAppointments = async (req, res) => {
+  try {
+    // Fetch all users with their appointments
+    let users = await getUsers1();
+
+
+
+    // Filter users who have no appointments
+    const usersWithoutAppointments = users.filter(user => user.appointments.length === 0 );
+
+    if (usersWithoutAppointments.length===0) {
+      return res.status(404).json({
+        success: false,
+        message: "Users not found",
+        users:[]
+      });
+    }
+
+    return res.status(200).json(usersWithoutAppointments);
+  } catch (error) {
+    console.error("Error fetching users without appointments:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
