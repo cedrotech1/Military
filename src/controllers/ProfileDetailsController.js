@@ -54,8 +54,69 @@ export const addProfileDetailsController = async (req, res) => {
 
 
     
-       
+    
+    const existingProfile = await checkExistingProfileDetails(req.body.name);
+    if (existingProfile) {
+      return res.status(400).json({
+        success: false,
+        message: "profile detail exists",
+      });
+    }
+    req.body.status = "active";
+    const newProfile = await createProfileDetails(req.body);
 
+    return res.status(201).json({
+      success: true,
+      message: "Profile created successfully",
+      profile: newProfile,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
+export const addProfileDetailsOthersController = async (req, res) => {
+  try {
+   req.body.userID=req.params.id;
+    req.body.name = req.body.name.toUpperCase();
+    if (!req.body.name) {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required",
+      });
+    }
+
+    const data = await getOneCategoryWithDetails(req.body.categoryID);
+    if (!data) {
+      return res.status(404).json({
+        message: "Category not found",
+      });
+    }
+    let image; 
+    if (req.files && req.files.image) {
+      try {
+        image = await imageUploader(req);
+        if (!image || !image.url) {
+          throw new Error('Upload failed or image URL missing');
+        }
+        req.body.image = image.url;
+        console.log(req.body.image)
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        // Handle error appropriately
+      }
+    }else{
+      req.body.image = null;
+    }
+
+
+    
+    
     const existingProfile = await checkExistingProfileDetails(req.body.name);
     if (existingProfile) {
       return res.status(400).json({
@@ -137,16 +198,10 @@ export const getOneProfileDetailsController = async (req, res) => {
   }
 };
 
-
-
-
-
 export const deleteOneProfileDetailsController = async (req, res) => {
   try {
-
     const { id } = req.params;
-    const userID = req.user.id; // Get logged-in user's ID
-
+    const userID = req.user.id; 
     const data = await getOneProfileDetailsWithDetails(id,userID);
     if (!data) {
       return res.status(404).json({

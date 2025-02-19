@@ -599,6 +599,60 @@ const options = {
         },
       },
     },
+    "/api/v1/profile/add/{id}": {
+      post: {
+        tags: ["profile"],
+        summary: "Add a profile for others",
+        description: "Add a profile",
+        operationId: "addotherprofile",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "profile's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/Profile",
+              },
+              example: {
+                categoryID: "1",
+                name: "huye/ngoma",
+                description: "descri.......",
+               
+              },
+            },
+            "multipart/form-data": {
+              schema: {
+                $ref: "#/components/schemas/Profile",
+              },
+            },
+            required: true,
+          },
+        },
+        responses: {
+          201: {
+            description: "profile created successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
     "/api/v1/profile/": {
       get: {
         tags: ["profile"],

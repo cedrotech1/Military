@@ -50,7 +50,7 @@ export const addAppoitmentController = async (req, res) => {
       });
     }
 
-    if (data.status!="active") {
+    if (data.status=="inactive") {
       return res.status(404).json({
         message: "mission is not active",
       });

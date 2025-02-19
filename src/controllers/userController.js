@@ -242,7 +242,11 @@ export const getUsersWithoutAppointments = async (req, res) => {
       });
     }
 
-    return res.status(200).json(usersWithoutAppointments);
+    return res.status(200).json({
+      success: true,
+      message: "Users retrieved successfully",
+      users:usersWithoutAppointments
+    });
   } catch (error) {
     console.error("Error fetching users without appointments:", error);
     return res.status(500).json({ error: "Internal server error" });

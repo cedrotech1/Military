@@ -20,7 +20,7 @@ module.exports = {
         password: hashedPasswordAdmin,
         gender: "Male",
         address: "huye/tumba",
-        image: 'http://res.cloudinary.com/dzl8xve8s/image/upload/v1739539180/Card/bffzcdfqve8nnnft8j3o.png',
+        image: 'https://res.cloudinary.com/dzl8xve8s/image/upload/v1739974089/Card/tpfxwscg5hfek50yitjc.png',
         createdAt: new Date(),
         updatedAt: new Date(),
       },

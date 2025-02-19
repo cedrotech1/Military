@@ -13,7 +13,9 @@
     "down": "npx sequelize-cli db:migrate:undo:all",
     "seed": "npx sequelize-cli db:seed:all",
     "undo-seed": "npx sequelize-cli db:seed:undo",
-    "reset": "npm run down && npm run migrate && npm run seed"
+    "reset": "npm run down && npm run migrate && npm run seed",
+    "resetDev": "cross-env NODE_ENV=development npx sequelize-cli db:migrate:undo:all && cross-env NODE_ENV=development npx sequelize-cli db:migrate && cross-env NODE_ENV=development npx sequelize-cli db:seed:all",
+    "resetProd": "cross-env NODE_ENV=production npx sequelize-cli db:migrate:undo:all && cross-env NODE_ENV=production npx sequelize-cli db:migrate && cross-env NODE_ENV=production npx sequelize-cli db:seed:all"
   },
   "author": "",
   "license": "ISC",

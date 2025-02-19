@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Users.init(
     {
+      
       firstname: DataTypes.STRING,
       lastname: DataTypes.STRING,
       email: { type: DataTypes.STRING, unique: true },
@@ -19,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       phone: { type: DataTypes.STRING, unique: true },
       gender: DataTypes.ENUM("Male", "Female", "Other"),
       role: DataTypes.STRING,
-      address: DataTypes.TEXT,
+       address: DataTypes.TEXT,
       code: DataTypes.STRING,
       status: DataTypes.STRING,
       image: DataTypes.STRING,

@@ -6,7 +6,8 @@ import {
   getOneProfileDetailsController,
   updateprofile,
   activateProfileDetailsController,
-  deactivateProfileDetailsController
+  deactivateProfileDetailsController,
+  addProfileDetailsOthersController
   
 
 } from "../controllers/ProfileDetailsController.js";
@@ -16,6 +17,7 @@ const router = express.Router();
 
 router.delete("/delete/:id", protect, deleteOneProfileDetailsController);
 router.post("/add/", protect, addProfileDetailsController);
+router.post("/add/:id", protect, addProfileDetailsOthersController);
 router.get("/", protect, ProfileDetailsWithAllController);
 router.get("/all", protect, ProfileDetailsWithAllController);
 router.get("/one/:id", protect, getOneProfileDetailsController);
