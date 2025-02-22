@@ -6,6 +6,7 @@ const Notifications = db["Notifications"];
 const ProfileCategories = db["ProfileCategories"];
 const Missions = db["Missions"];
 const Appointments = db["Appointments"];
+const Department = db["Departments"];
 
 import Sequelize, { where } from "sequelize";
 
@@ -37,7 +38,18 @@ export const getUsers = async () => {
         {
           model: Notifications,
           as: "notifications",
-        }
+        },
+        {
+          model: Department,
+          as: "department",
+          include: [
+            {
+              model: users,
+              as: "reader",
+              attributes: { exclude: ["password"] }, // Exclude password
+            },
+          ],
+        },
         
       ],
     });
@@ -78,7 +90,18 @@ export const getUsers1 = async () => {
         {
           model: Notifications,
           as: "notifications",
-        }
+        },
+        {
+          model: Department,
+          as: "department",
+          include: [
+            {
+              model: users,
+              as: "reader",
+              attributes: { exclude: ["password"] }, // Exclude password
+            },
+          ],
+        },
         
       ],
     });
@@ -161,7 +184,17 @@ export const getUser = async (id) => {
       {
         model: Notifications,
         as: "notifications",
-      }
+      },
+      {
+        model: Department,
+        as: "department",
+        include: [
+          {
+            model: users,
+            as: "reader",
+          },
+        ],
+      },
       
     ],
   });

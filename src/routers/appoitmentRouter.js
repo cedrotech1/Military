@@ -4,7 +4,8 @@ import {
   AppoitmentWithAllController,
   deleteOneAppoitmentController,
   getOneAppoitmentController,
-  changeAppoitmentController
+  changeAppoitmentController,
+  getMyAppoitment
   
 
 } from "../controllers/AppoitmentController.js";
@@ -17,6 +18,7 @@ router.post("/add/", protect, addAppoitmentController);
 router.get("/", protect, AppoitmentWithAllController);
 router.get("/all", protect, AppoitmentWithAllController);
 router.get("/one/:id", protect, getOneAppoitmentController);
+router.get("/user", protect, getMyAppoitment);
 router.put("/change/:id", protect, changeAppoitmentController);
 
 

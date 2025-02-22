@@ -20,8 +20,117 @@ import {
   createNotification,
 } from "../services/NotificationService";
 
+import {
+
+  checkExistingDepartmentReader 
+
+} from "../services/departmentService.js";
 import imageUploader from "../helpers/imageUplouder.js";
 
+const xlsx = require('xlsx');
+const fs = require('fs');
+const path = require('path');
+
+export const processAddUsers = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'No file uploaded.' });
+  }
+
+  const fileExtension = path.extname(req.file.originalname);
+  if (!['.xlsx', '.xls'].includes(fileExtension)) {
+    return res.status(400).json({ success: false, message: 'Invalid file format. Please upload an Excel file.' });
+  }
+
+  const excelFilePath = req.file.path;
+  const results = [];
+  const duplicateUsers = [];
+
+  try {
+    const workbook = xlsx.readFile(excelFilePath);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+
+    // Convert the sheet to JSON
+    const data = xlsx.utils.sheet_to_json(sheet);
+
+    for (const row of data) {
+      if (!row.FIRSTNAME || !row.LASTNAME || !row.EMAIL || !row.PHONE || !row.ROLE) {
+        continue; // Skip incomplete entries
+      }
+
+      const email = row.EMAIL.trim().toLowerCase();
+      const phone = row.PHONE;
+      const role = row.ROLE;
+
+
+  
+
+      // Check for duplicate users
+      const existingUser = await getUserByEmail(email);
+      if (existingUser) {
+        duplicateUsers.push(email);
+        continue;
+      }
+
+      const phoneExist = await getUserByPhone(phone.toString());
+      if (phoneExist) {
+        duplicateUsers.push(phone);
+        continue;
+      }
+
+      // Generate a secure password
+      const password = `D${Math.random().toString(36).slice(-8)}`;
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const userData = {
+        firstname: row.FIRSTNAME,
+        lastname: row.LASTNAME,
+        phone,
+        email,
+        role,
+        password: hashedPassword,
+        status: 'active',
+      };
+
+      const newUser = await createUser(userData);
+      newUser.password = password; // Temporary plain password for email notification
+
+      // Send email
+      await new Email(newUser).sendAccountAdded();
+
+      // Create notification
+      await createNotification({
+        userID: newUser.id,
+        title: "Account created for you",
+        message: "Your account has been successfully created.",
+        type: 'account',
+        isRead: false,
+      });
+
+      results.push({
+        id: newUser.id,
+        firstname: newUser.firstname,
+        lastname: newUser.lastname,
+        email: newUser.email,
+        role: newUser.role,
+      });
+    }
+
+    // Remove the uploaded file after processing
+    fs.unlinkSync(excelFilePath);
+
+    return res.json({
+      success: true,
+      message: 'Users processed successfully.',
+      createdUsers: results,
+      duplicateUsers: duplicateUsers.length > 0 ? `Duplicate users skipped: ${duplicateUsers.join(', ')}` : 'No duplicates found',
+    });
+
+  } catch (error) {
+    console.error('Error processing the Excel file:', error.message);
+    return res.status(500).json({ success: false, message: 'Error processing the Excel file.', error: error.message });
+  }
+};
 
 export const changePassword = async (req, res) => {
   console.log(req.user.id)
@@ -133,7 +242,7 @@ export const addUser = async (req, res) => {
     if (!req.body.role === "Commander-Officer" || !req.body.role === "user") {
       return res.status(400).json({
         success: false,
-        message: "you are not allowed add user lather that Commander-Officer or persenel ",
+        message: "you are not allowed add user lather that Commander-Officer or persenel",
       });
     }
 
@@ -167,7 +276,7 @@ export const addUser = async (req, res) => {
     newUser.password = password;
 
     // send email
-    await new Email(newUser).sendAccountAdded();
+    // await new Email(newUser).sendAccountAdded();
 
     const notification = await createNotification({ userID:newUser.id,title:"Account created for you", message:"your account has been created successfull", type:'account', isRead: false });
     
@@ -181,6 +290,7 @@ export const addUser = async (req, res) => {
         lastname: newUser.lastname,
         email: newUser.email,
         role: newUser.role, 
+        departmentId: newUser.departmentId,
       },
     });
   } catch (error) {
@@ -192,24 +302,16 @@ export const addUser = async (req, res) => {
   }
 };
 
-
 export const getAllUsers = async (req, res) => {
-  try {
-
-    
+  try { 
     let filteredusers=[];
     let users = await getUsers();
-
     if (req.user.role === "admin") {
-      // Fetch users for the specific restaurant admin
       filteredusers = users.filter(user => user.id != req.user.id);
-    
     } 
     else if (req.user.role === "Commander-Officer") {
-      // Fetch all users
       filteredusers = users.filter(user => user.role === "user" || user.id != req.user.id && user.role != "admin");
-    }
-      
+    } 
     return res.status(200).json({
       success: true,
       message: "Users retrieved successfully",
@@ -223,6 +325,7 @@ export const getAllUsers = async (req, res) => {
     });
   }
 };
+
 
 export const getUsersWithoutAppointments = async (req, res) => {
   try {
@@ -542,6 +645,59 @@ export const ResetPassword = async (req, res) => {
 
 
 
+// export const getAllUsers11 = async (req, res) => {
+//   try {
+//     let filteredUsers = [];
+//     let users = await getUsers();
+
+//     // Filter users for 'Commander-Officer' role, excluding current user and admin
+//     filteredUsers = users.filter(user => 
+//       (user.role === "Commander-Officer" && user.id !== req.user.id) && user.role !== "admin"
+//     );
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Users retrieved successfully",
+//       users: filteredUsers,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({
+//       message: "Something went wrong",
+//       error,
+//     });
+//   }
+// };
+
+
+export const getAllUsers11 = async (req, res) => {
+  try {
+    let filteredUsers = [];
+    let users = await getUsers();
+    
+    // Loop through the users and check if the user is assigned as a leader in any department
+    for (let user of users) {
+      const existReader = await checkExistingDepartmentReader(user.id);
+
+      // Only include users who are either 'Commander-Officer' and are not assigned to any department
+      if (user.role === "Commander-Officer" && !existReader && user.id !== req.user.id && user.role !== "admin") {
+        filteredUsers.push(user);
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Users retrieved successfully",
+      users: filteredUsers,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
 
 
 

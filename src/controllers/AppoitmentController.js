@@ -4,7 +4,8 @@ import {
   getAllAppoitmentes,
   deleteOneAppoitment,
   getOneAppoitmentWithDetails,
-  changeAppoitmentstatus
+  changeAppoitmentstatus,
+  getmyappoitments
   
 
 } from "../services/AppoitmentService.js";
@@ -55,7 +56,6 @@ export const addAppoitmentController = async (req, res) => {
         message: "mission is not active",
       });
     }
-
     const user = await getUser(req.body.userID);
     if (!user) {
       return res.status(404).json({
@@ -141,6 +141,34 @@ export const getOneAppoitmentController = async (req, res) => {
     const userID = req.user.id; // Get logged-in user's ID
 
     const data = await getOneAppoitmentWithDetails(id);
+    if (!data) {
+      return res.status(404).json({
+        message: "Appoitment detail not found",
+        data:[],
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "profile detail retrieved successfully",
+      data,
+      user: req.user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
+
+export const getMyAppoitment = async (req, res) => {
+
+
+  try {
+    const { id } = req.params;
+    const userID = req.user.id; // Get logged-in user's ID
+
+    const data = await getmyappoitments(userID);
     if (!data) {
       return res.status(404).json({
         message: "Appoitment detail not found",

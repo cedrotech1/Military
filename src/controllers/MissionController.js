@@ -8,6 +8,8 @@ import {
   updateOne,
   activate,
   deactivate,
+  getAllMissionesCountries,
+  getCountriesWithMissions
   
 
 } from "../services/MissionService.js";
@@ -118,10 +120,6 @@ export const getOneMissionController = async (req, res) => {
   }
 };
 
-
-
-
-
 export const deleteOneMissionController = async (req, res) => {
   try {
 
@@ -163,8 +161,6 @@ export const deleteOneMissionController = async (req, res) => {
     });
   }
 };
-
-
 
 export const updatemissionController = async (req, res) => {
  
@@ -211,10 +207,6 @@ export const updatemissionController = async (req, res) => {
      });
    }
 };
-
-
-
-
 
 export const activateMissionController = async (req, res) => {
   try {
@@ -296,6 +288,59 @@ export const deactivateMissionController = async (req, res) => {
       mission,
     });
   } catch (error) {
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
+
+
+export const MissionCountries = async (req, res) => {
+  try {
+    const userID = req.user.id; // Get logged-in user's ID
+
+    let data = await getAllMissionesCountries();
+    if (!data || data.length === 0) {
+      return res.status(404).json({
+        message: "No missions found",
+        data: [],
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "countries details retrieved successfully",
+      data  
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
+
+export const CountriesHasmissions = async (req, res) => {
+  try {
+    const userID = req.user.id; // Get logged-in user's ID
+
+    let data = await getCountriesWithMissions();
+    if (!data || data.length === 0) {
+      return res.status(404).json({
+        message: "No conties found",
+        data: [],
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "countries details retrieved successfully",
+      data  
+    });
+  } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Something went wrong",
       error,

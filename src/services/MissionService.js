@@ -6,6 +6,7 @@ const Notifications = db["Notifications"];
 const ProfileCategories = db["ProfileCategories"];
 const Missions = db["Missions"];
 const Appointments = db["Appointments"];
+const Countries = db["countries"];
 export const getOneMissionWithDetails = async (id) => {
   try {
     const info = await Mission.findByPk(id,{
@@ -15,11 +16,14 @@ export const getOneMissionWithDetails = async (id) => {
           as: "creator",
         },
         {
+          model: Countries,
+          as: "country",
+        },
+        {
           model:Appointments,
           as:"appointments",
           include: [
-          
-            {
+             {
               model:users,
               as:"user"
             },
@@ -39,6 +43,19 @@ export const getOneMissionWithDetails = async (id) => {
   }
 };
 
+
+// getAllMissionesCountries
+
+export const getAllMissionesCountries = async () => {
+  try {
+    const Info = await Countries.findAll();
+
+    return Info;
+  } catch (error) {
+    console.error("Error fetching profile details for user:", error);
+    throw error;
+  }
+};
 export const getAllMissiones = async () => {
   try {
     const Info = await Mission.findAll({
@@ -46,6 +63,10 @@ export const getAllMissiones = async () => {
         {
           model: users,
           as: "creator",
+        },
+        {
+          model: Countries,
+          as: "country",
         },
         {
           model:Appointments,
@@ -68,6 +89,24 @@ export const getAllMissiones = async () => {
   } catch (error) {
     console.error("Error fetching profile details for user:", error);
     throw error;
+  }
+};
+
+export const getCountriesWithMissions = async () => {
+  try {
+    const countriesWithMissions = await Countries.findAll({
+      include: [
+        {
+          model: Mission,
+          as: "missionscountry",
+          required: true, 
+        },
+      ],
+    });
+
+    return countriesWithMissions;
+  } catch (error) {
+    throw new Error("Error fetching countries with missions: " + error.message);
   }
 };
 

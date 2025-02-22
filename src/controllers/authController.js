@@ -54,6 +54,7 @@ export const login = async (req, res) => {
       gender: user.gender,
       address: user.address,
       image: user.image,
+      departmentId: user.departmentId,
     },
   });
 };

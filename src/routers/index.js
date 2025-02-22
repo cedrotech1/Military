@@ -9,6 +9,7 @@ import mission from './missionRouter.js';
 import appoitment from './appoitmentRouter.js';
 import notification from './notificationRouter.js';
 import statistics from './statisticsRoutes.js';
+import Department from './departmentsRouter.js';
 
 const router = express.Router();
 
@@ -19,6 +20,7 @@ router.use('/profile', ProfileDetails);
 router.use('/categories', CategoriesRouter);
 router.use('/mission', mission);
 router.use('/appoitment', appoitment);
+router.use('/department', Department);
 router.use('/notification', notification);
 router.use('/statistics', statistics);
 

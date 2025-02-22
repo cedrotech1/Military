@@ -26,6 +26,7 @@ const options = {
     { name: "appoitment", description: "appoitment" },
     { name: "notification", description: "notification" },
     { name: "statistics", description: "statistics" },
+    { name: "department", description: "department" },
 
   ],
   paths: {
@@ -87,6 +88,7 @@ const options = {
                 role: "Commander-Officer   /user",
                 gender: "Male",
                 address: "Gatsata",
+                departmentId:"1",
              
               },
             },
@@ -121,6 +123,31 @@ const options = {
         responses: {
           200: {
             description: "User deleted successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/users/com": {
+      get: {
+        tags: ["Users"],
+        summary: "Get all officers users",
+        description: "Get all officers users",
+        operationId: "getAllUsersofficers",
+        responses: {
+          200: {
+            description: "User officers deleted successfully",
           },
           400: {
             description: "Bad request",
@@ -914,6 +941,7 @@ const options = {
               
                 name: "huye/ngoma",
                 description: "descri.......",
+                CountryID:"1",
                 location:"saoud arabia",
                 start_date: "2025-05-20",
                 end_date: "2025-07-20",
@@ -949,6 +977,58 @@ const options = {
         responses: {
           200: {
             description: "mission deleted successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/mission/countries": {
+      get: {
+        tags: ["mission"],
+        summary: "Get a  countries",
+        description: "Get a  countries",
+        operationId: "countries",
+    
+        responses: {
+          200: {
+            description: "countries deleted successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/mission/countries/all": {
+      get: {
+        tags: ["mission"],
+        summary: "Get a  all countries",
+        description: "Get a  all countries",
+        operationId: "allcountries",
+    
+        responses: {
+          200: {
+            description: "countries deleted successfully",
           },
           400: {
             description: "Bad request",
@@ -1310,6 +1390,32 @@ const options = {
         },
       },
     },
+    "/api/v1/appoitment/user": {
+      get: {
+        tags: ["appoitment"],
+        summary: "Get a myappoitments",
+        description: "Get a myappoitments",
+        operationId: "myappoitments",
+
+        responses: {
+          200: {
+            description: "appoitment retrieved successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
     "/api/v1/appoitment/change/{id}": {
       put: {
         tags: ["appoitment"],
@@ -1565,9 +1671,9 @@ const options = {
     "/api/v1/categories/add": {
       post: {
         tags: ["categories"],
-        summary: "Add a restaurent",
-        description: "Add a restaurent",
-        operationId: "addrestaurent",
+        summary: "Add a department",
+        description: "Add a department",
+        operationId: "adddepartment",
         requestBody: {
           content: {
             "application/json": {
@@ -1822,6 +1928,222 @@ const options = {
       },
     },
 
+
+
+    "/api/v1/department/add": {
+      post: {
+        tags: ["department"],
+        summary: "Add a department",
+        description: "Add a department",
+        operationId: "adddepartment",
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/Department",
+              },
+              example: {
+                name: "obina",
+                description: ".......",
+                readerId:"1"
+               
+              },
+            },
+            required: true,
+          },
+        },
+        responses: {
+          201: {
+            description: "department created successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/department/": {
+      get: {
+        tags: ["department"],
+        summary: "Get a department",
+        description: "Get a department",
+        operationId: "getOnedepartment",
+    
+        responses: {
+          200: {
+            description: "department deleted successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/department/delete/{id}": {
+      delete: {
+        tags: ["department"],
+        summary: "delete a department",
+        description: "delete a department",
+        operationId: "deleteOnedepartment",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "department's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          200: {
+            description: "department deleted successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/department/{id}": {
+      put: {
+        tags: ["department"],
+        summary: "Update a department",
+        description: "Update a department",
+        operationId: "updateOnedepartment",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "department's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/Department",
+              },
+              example: {
+                name: "obina",
+                description: ".......",
+                readerId:"1"
+               
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "department updated successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/department/one/{id}": {
+      get: {
+        tags: ["department"],
+        summary: "Get a department",
+        description: "Get a department",
+        operationId: "getOne1department",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "department's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          200: {
+            description: "department deleted successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/department/user": {
+      get: {
+        tags: ["department"],
+        summary: "Get a department",
+        description: "Get a department",
+        operationId: "getOneuserdepartment",
+
+        responses: {
+          200: {
+            description: "department retrieved successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+
     "/api/v1/statistics/": {
       get: {
         tags: ["statistics"],
@@ -1980,6 +2302,25 @@ const options = {
           status: {
             type: "string",
             description: "status",
+          },
+
+        },
+      },
+      Department: {
+        type: "object",
+        properties: {
+          
+          name: {
+            type: "string",
+            description: "name",
+          },
+          description: {
+            type: "string",
+            description: "description",
+          },
+          readerId: {
+            type: "integer",
+            description: "readerId",
           },
 
         },

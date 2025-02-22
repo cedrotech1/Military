@@ -34,6 +34,34 @@ export const getOneAppoitmentWithDetails = async (id) => {
   }
 };
 
+export const getmyappoitments = async (id) => {
+  try {
+    const Info = await Appoitment.findAll({
+      where: {userID:id},
+      include: [
+        {
+          model: users,
+          as: "assigner",
+        },
+        {
+          model:users,
+          as:"user"
+        },
+        {
+          model:Missions,
+          as:"mission"
+        }
+
+      ],
+    });
+
+    return Info;
+  } catch (error) {
+    console.error("Error fetching profile details for user:", error);
+    throw error;
+  }
+};
+
 export const getAllAppoitmentes = async () => {
   try {
     const Info = await Appoitment.findAll({
