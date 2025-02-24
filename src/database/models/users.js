@@ -34,6 +34,9 @@ module.exports = (sequelize, DataTypes) => {
         },
         allowNull: true,
       },
+      rank: DataTypes.STRING,
+      armyid: DataTypes.STRING,
+      joindate: DataTypes.STRING,
 
     },
     {

@@ -85,10 +85,13 @@ const options = {
                 lastname: "Doe",
                 email: "test@example.com",
                 phone: "08012345678",
-                role: "Commander-Officer   /user",
+                role: "Commander-Officer/user",
                 gender: "Male",
                 address: "Gatsata",
                 departmentId:"1",
+                rank: "General",
+                armyid: "1234576",
+                joindate: "20000-05-20",            
              
               },
             },
@@ -255,6 +258,9 @@ const options = {
                 lastname: "Doe",
                 email: "test@example.com",
                 phone: "08012345678",
+                rank: "General",
+                armyid: "1234576",
+                joindate: "20000-05-20",  
               },
             },
             "multipart/form-data": {
@@ -2211,6 +2217,20 @@ const options = {
             type: "string",
             description: "User's phone number",
           },
+          rank: {
+            type: "string",
+            description: "User's rank",
+          },
+          armyid: {
+            type: "string",
+            description: "User's armyid",
+          },
+          joindate: {
+            type: "string",
+            description: "User's joindate",
+          },
+          
+
           role: {
             type: "string",
             description: "User's role",

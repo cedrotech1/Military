@@ -55,6 +55,9 @@ export const login = async (req, res) => {
       address: user.address,
       image: user.image,
       departmentId: user.departmentId,
+      rank: user.rank,
+      armyid: user.armyid,
+      joindate: user.joindate,
     },
   });
 };

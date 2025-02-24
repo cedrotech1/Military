@@ -21,6 +21,7 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
+     
       password: {
         type: Sequelize.STRING,
         allowNull: false, // Removed unique constraint
@@ -56,6 +57,18 @@ module.exports = {
         },
         onUpdate: "CASCADE",
         onDelete: "SET NULL",
+      },
+      armyid: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      joindate: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      rank: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,

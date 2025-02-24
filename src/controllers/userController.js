@@ -271,12 +271,13 @@ export const addUser = async (req, res) => {
     // create user with generated password and set status to active
     req.body.password = password;
     req.body.status = "active";
+    console.log(req.body);
 
     const newUser = await createUser(req.body);
     newUser.password = password;
 
     // send email
-    // await new Email(newUser).sendAccountAdded();
+    await new Email(newUser).sendAccountAdded();
 
     const notification = await createNotification({ userID:newUser.id,title:"Account created for you", message:"your account has been created successfull", type:'account', isRead: false });
     
@@ -291,6 +292,10 @@ export const addUser = async (req, res) => {
         email: newUser.email,
         role: newUser.role, 
         departmentId: newUser.departmentId,
+        rank: newUser.rank,
+        armyid: newUser.armyid,
+        joindate: newUser.joindate,
+
       },
     });
   } catch (error) {
@@ -332,29 +337,33 @@ export const getUsersWithoutAppointments = async (req, res) => {
     // Fetch all users with their appointments
     let users = await getUsers1();
 
+    // Get the current date
+    const currentDate = new Date();
 
+    // Filter users who joined more than 3 years ago
+    const threeYearsAgo = new Date(currentDate.setFullYear(currentDate.getFullYear() - 3));
 
-    // Filter users who have no appointments
-    const usersWithoutAppointments = users.filter(user => user.appointments.length === 0 );
+    const usersJoinedMoreThan3YearsAgo = users.filter(user => new Date(user.joindate) < threeYearsAgo);
 
-    if (usersWithoutAppointments.length===0) {
+    if (usersJoinedMoreThan3YearsAgo.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "Users not found",
-        users:[]
+        message: "No users found who joined more than 3 years ago",
+        users: []
       });
     }
 
     return res.status(200).json({
       success: true,
       message: "Users retrieved successfully",
-      users:usersWithoutAppointments
+      users: usersJoinedMoreThan3YearsAgo
     });
   } catch (error) {
-    console.error("Error fetching users without appointments:", error);
+    console.error("Error fetching users who joined more than 3 years ago:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 
 export const getOneUser = async (req, res) => {
@@ -416,9 +425,6 @@ export const updateOneUser = async (req, res) => {
     });
   }
 };
-
-
-
 
 export const deleteOneUser = async (req, res) => {
   try {
@@ -678,7 +684,6 @@ export const getAllUsers11 = async (req, res) => {
     // Loop through the users and check if the user is assigned as a leader in any department
     for (let user of users) {
       const existReader = await checkExistingDepartmentReader(user.id);
-
       // Only include users who are either 'Commander-Officer' and are not assigned to any department
       if (user.role === "Commander-Officer" && !existReader && user.id !== req.user.id && user.role !== "admin") {
         filteredUsers.push(user);
