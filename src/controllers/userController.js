@@ -343,7 +343,7 @@ export const getUsersWithoutAppointments = async (req, res) => {
     // Filter users who joined more than 3 years ago
     const threeYearsAgo = new Date(currentDate.setFullYear(currentDate.getFullYear() - 3));
 
-    const usersJoinedMoreThan3YearsAgo = users.filter(user => new Date(user.joindate) < threeYearsAgo);
+    const usersJoinedMoreThan3YearsAgo = users.filter(user => new Date(user.joindate) < threeYearsAgo && user.appointments.length === 0);
 
     if (usersJoinedMoreThan3YearsAgo.length === 0) {
       return res.status(404).json({
@@ -352,6 +352,7 @@ export const getUsersWithoutAppointments = async (req, res) => {
         users: []
       });
     }
+
 
     return res.status(200).json({
       success: true,
