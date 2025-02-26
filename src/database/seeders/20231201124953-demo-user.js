@@ -10,8 +10,8 @@ module.exports = {
     const hashedPasswordPersonel = await bcrypt.hash("1234", saltRounds);
 
     // Calculate join date (exactly 3 years ago)
-    const threeYearsAgo = new Date();
-    threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 4);
+    const fourYearsAgo = new Date();
+    fourYearsAgo.setFullYear(fourYearsAgo.getFullYear() - 4);
 
     return queryInterface.bulkInsert("Users", [
       {
@@ -25,7 +25,7 @@ module.exports = {
         departmentId: null,
         rank: "General",
         armyid: "1234576",
-        joindate: threeYearsAgo,
+        joindate: '2020-12-01',
         gender: "Male",
         address: "huye/tumba",
         image: 'https://res.cloudinary.com/dzl8xve8s/image/upload/v1739974089/Card/tpfxwscg5hfek50yitjc.png',
@@ -43,7 +43,7 @@ module.exports = {
         departmentId: null,
         rank: "Captain",
         armyid: "1233456",
-        joindate: threeYearsAgo,
+        joindate: '2020-12-01',
         gender: "Male",
         address: "Kigali, Rwanda",
         image: 'http://res.cloudinary.com/dzl8xve8s/image/upload/v1724766686/Card/nrujel7xhcokiikabpyj.png',
@@ -59,7 +59,7 @@ module.exports = {
         status: "active",
         rank: "Lieutenant",
         armyid: "1234561",
-        joindate: threeYearsAgo,
+        joindate: '2020-12-01',
         password: hashedPasswordPersonel,
         departmentId: 1,
         gender: "Male",
