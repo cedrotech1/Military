@@ -20,11 +20,7 @@ module.exports = {
       categoryID: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: {
-          model: 'ProfileCategories',
-          key: 'id'
-        },
-        onDelete: 'CASCADE'
+       
       },
       name: {
         type: Sequelize.STRING
