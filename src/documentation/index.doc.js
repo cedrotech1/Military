@@ -20,13 +20,14 @@ const options = {
   tags: [
     { name: "System Authontication", description: "" },
     { name: "Users", description: "Users" },
-    { name: "profile", description: "profile" },
-    { name: "categories", description: "categories" },
+    { name: "sordierskills", description: "sordierskills" },
+    { name: "skills", description: "skills" },
     { name: "mission", description: "mission" },
     { name: "appoitment", description: "appoitment" },
     { name: "notification", description: "notification" },
     { name: "statistics", description: "statistics" },
     { name: "department", description: "department" },
+    { name: "batarian", description: "batarian" },
 
   ],
   paths: {
@@ -589,60 +590,18 @@ const options = {
 
 
 
-    "/api/v1/profile/add": {
+  
+    "/api/v1/sordierskills/add/{id}": {
       post: {
-        tags: ["profile"],
-        summary: "Add a profile",
-        description: "Add a profile",
-        operationId: "addprofile",
-        requestBody: {
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/Profile",
-              },
-              example: {
-                categoryID: "1",
-                name: "huye/ngoma",
-                description: "descri.......",
-               
-              },
-            },
-            "multipart/form-data": {
-              schema: {
-                $ref: "#/components/schemas/Profile",
-              },
-            },
-            required: true,
-          },
-        },
-        responses: {
-          201: {
-            description: "profile created successfully",
-          },
-          400: {
-            description: "Bad request",
-          },
-          401: {
-            description: "Unauthorized",
-          },
-          500: {
-            description: "Something went wrong",
-          },
-        },
-      },
-    },
-    "/api/v1/profile/add/{id}": {
-      post: {
-        tags: ["profile"],
-        summary: "Add a profile for others",
-        description: "Add a profile",
-        operationId: "addotherprofile",
+        tags: ["sordierskills"],
+        summary: "Add a sordierskills for others",
+        description: "Add a sordierskills",
+        operationId: "sordierskillsadd",
         parameters: [
           {
             name: "id",
             in: "path",
-            description: "profile's id",
+            description: "user's id",
             required: true,
             schema: {
               type: "string",
@@ -653,18 +612,19 @@ const options = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/Profile",
+                $ref: "#/components/schemas/sordierskills",
               },
               example: {
-                categoryID: "1",
+                skillsID: "1",
                 name: "huye/ngoma",
                 description: "descri.......",
+                skillsID:""
                
               },
             },
             "multipart/form-data": {
               schema: {
-                $ref: "#/components/schemas/Profile",
+                $ref: "#/components/schemas/sordierskills",
               },
             },
             required: true,
@@ -672,7 +632,7 @@ const options = {
         },
         responses: {
           201: {
-            description: "profile created successfully",
+            description: "sordierskills created successfully",
           },
           400: {
             description: "Bad request",
@@ -686,16 +646,16 @@ const options = {
         },
       },
     },
-    "/api/v1/profile/": {
+    "/api/v1/sordierskills/": {
       get: {
-        tags: ["profile"],
-        summary: "Get a profile",
-        description: "Get a profile",
-        operationId: "getOneprofile",
+        tags: ["sordierskills"],
+        summary: "Get a sordierskills",
+        description: "Get a sordierskills",
+        operationId: "getOnesordierskills",
     
         responses: {
           200: {
-            description: "User deleted successfully",
+            description: "sordierskills deleted successfully",
           },
           400: {
             description: "Bad request",
@@ -712,17 +672,43 @@ const options = {
         },
       },
     },
-    "/api/v1/profile/delete/{id}": {
+    "/api/v1/sordierskills/myskills": {
+      get: {
+        tags: ["sordierskills"],
+        summary: "Get a myskills",
+        description: "Get a myskills",
+        operationId: "getmyskills",
+    
+        responses: {
+          200: {
+            description: "myskills retrieved successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/sordierskills/delete/{id}": {
       delete: {
-        tags: ["profile"],
-        summary: "delete a profile",
-        description: "delete a profile",
-        operationId: "deleteOneprofile",
+        tags: ["sordierskills"],
+        summary: "delete a sordierskills",
+        description: "delete a sordierskills",
+        operationId: "deletesordierskills",
         parameters: [
           {
             name: "id",
             in: "path",
-            description: "profile's id",
+            description: "sordierskills's id",
             required: true,
             schema: {
               type: "string",
@@ -731,7 +717,7 @@ const options = {
         ],
         responses: {
           200: {
-            description: "profile deleted successfully",
+            description: "sordierskills deleted successfully",
           },
           400: {
             description: "Bad request",
@@ -749,71 +735,18 @@ const options = {
       },
     },
  
-    "/api/v1/profile/update/{id}": {
-      put: {
-        tags: ["profile"],
-        summary: "Add a profile",
-        description: "Add a profile",
-        operationId: "updateprofile",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            description: "profile's id",
-            required: true,
-            schema: {
-              type: "string",
-            },
-          },
-        ],
-        requestBody: {
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/Profile",
-              },
-              example: {
-                categoryID: "1",
-                name: "huye/ngoma",
-                description: "descri.......",
-               
-              },
-            },
-            "multipart/form-data": {
-              schema: {
-                $ref: "#/components/schemas/Profile",
-              },
-            },
-            required: true,
-          },
-        },
-        responses: {
-          201: {
-            description: "profile created successfully",
-          },
-          400: {
-            description: "Bad request",
-          },
-          401: {
-            description: "Unauthorized",
-          },
-          500: {
-            description: "Something went wrong",
-          },
-        },
-      },
-    },
-    "/api/v1/profile/one/{id}": {
+  
+    "/api/v1/sordierskills/one/{id}": {
       get: {
-        tags: ["profile"],
-        summary: "Get a profile",
-        description: "Get a profile",
-        operationId: "getOneprofile",
+        tags: ["sordierskills"],
+        summary: "Get a sordierskills",
+        description: "Get a sordierskills",
+        operationId: "getOnesordierskills",
         parameters: [
           {
             name: "id",
             in: "path",
-            description: "profile's id",
+            description: "sordierskills's id",
             required: true,
             schema: {
               type: "string",
@@ -822,81 +755,7 @@ const options = {
         ],
         responses: {
           200: {
-            description: "profile deleted successfully",
-          },
-          400: {
-            description: "Bad request",
-          },
-          401: {
-            description: "Unauthorized",
-          },
-          404: {
-            description: "User not found",
-          },
-          500: {
-            description: "Something went wrong",
-          },
-        },
-      },
-    },
-    "/api/v1/profile/activate/{id}": {
-      put: {
-        tags: ["profile"],
-        summary: "activate a profile",
-        description: "activate a profile",
-        operationId: "activateOneprofile",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            description: "profile's id",
-            required: true,
-            schema: {
-              type: "string",
-            },
-          },
-        ],
-
-        responses: {
-          200: {
-            description: "profile activated successfully",
-          },
-          400: {
-            description: "Bad request",
-          },
-          401: {
-            description: "Unauthorized",
-          },
-          404: {
-            description: "User not found",
-          },
-          500: {
-            description: "Something went wrong",
-          },
-        },
-      },
-    },
-    "/api/v1/profile/disactivate/{id}": {
-      put: {
-        tags: ["profile"],
-        summary: "disactivate a profile",
-        description: "disactivate a profile",
-        operationId: "disactivateprofile",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            description: "profile's id",
-            required: true,
-            schema: {
-              type: "string",
-            },
-          },
-        ],
-
-        responses: {
-          200: {
-            description: "profile disactivated successfully",
+            description: "sordierskills deleted successfully",
           },
           400: {
             description: "Bad request",
@@ -1255,11 +1114,6 @@ const options = {
       },
     },
 
-
-
-
-
-      
     "/api/v1/appoitment/add": {
       post: {
         tags: ["appoitment"],
@@ -1276,6 +1130,43 @@ const options = {
                 userID: 1,
                 missionID:1,
                 status:"active",
+              },
+            },
+            required: true,
+          },
+        },
+        responses: {
+          201: {
+            description: "appoitment created successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+
+    "/api/v1/appoitment/assign": {
+      post: {
+        tags: ["appoitment"],
+        summary: "Add assign appoitment",
+        description: "Add a assign appoitment",
+        operationId: "add_assign",
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/Appoitment",
+              },
+              example: {
+                missionId: 1,
+                batarianId:1,
               },
             },
             required: true,
@@ -1674,31 +1565,30 @@ const options = {
 
 
 
-    "/api/v1/categories/add": {
+    "/api/v1/skills/add": {
       post: {
-        tags: ["categories"],
-        summary: "Add a department",
-        description: "Add a department",
-        operationId: "adddepartment",
+        tags: ["skills"],
+        summary: "Add a skills",
+        description: "Add a skills",
+        operationId: "skills",
         requestBody: {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/categories",
+                $ref: "#/components/schemas/skills",
               },
-              // example: {
-              //   name: "obina",
-              //   address: "huye/ngoma",
-              //   description: "restourent descri.......",
+              example: {
+                name: "name"
                
-              // },
+               
+              },
             },
             required: true,
           },
         },
         responses: {
           201: {
-            description: "User created successfully",
+            description: "skills created successfully",
           },
           400: {
             description: "Bad request",
@@ -1712,16 +1602,16 @@ const options = {
         },
       },
     },
-    "/api/v1/categories/": {
+    "/api/v1/skills/": {
       get: {
-        tags: ["categories"],
-        summary: "Get a categories",
-        description: "Get a categories",
-        operationId: "getOnecategory",
+        tags: ["skills"],
+        summary: "Get a skills",
+        description: "Get a skills",
+        operationId: "getOneskills",
     
         responses: {
           200: {
-            description: "categories deleted successfully",
+            description: "skills deleted successfully",
           },
           400: {
             description: "Bad request",
@@ -1738,17 +1628,17 @@ const options = {
         },
       },
     },
-    "/api/v1/categories/delete/{id}": {
+    "/api/v1/skills/delete/{id}": {
       delete: {
-        tags: ["categories"],
-        summary: "delete a categories",
-        description: "delete a categories",
-        operationId: "deleteOnecategories",
+        tags: ["skills"],
+        summary: "delete a skills",
+        description: "delete a skills",
+        operationId: "deleteOneskillss",
         parameters: [
           {
             name: "id",
             in: "path",
-            description: "Restaurent's id",
+            description: "skills's id",
             required: true,
             schema: {
               type: "string",
@@ -1757,7 +1647,7 @@ const options = {
         ],
         responses: {
           200: {
-            description: "User deleted successfully",
+            description: "skills deleted successfully",
           },
           400: {
             description: "Bad request",
@@ -1774,17 +1664,17 @@ const options = {
         },
       },
     },
-    "/api/v1/categories/{id}": {
+    "/api/v1/skills/{id}": {
       put: {
-        tags: ["categories"],
-        summary: "Update a categories",
-        description: "Update a categories",
-        operationId: "updateOnecategories",
+        tags: ["skills"],
+        summary: "Update a skills",
+        description: "Update a skills",
+        operationId: "updateOneskills",
         parameters: [
           {
             name: "id",
             in: "path",
-            description: "categories's id",
+            description: "skills's id",
             required: true,
             schema: {
               type: "string",
@@ -1795,20 +1685,18 @@ const options = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/categories",
+                $ref: "#/components/schemas/skills",
               },
-              // example: {
-              //   firstname: "John",
-              //   lastname: "Doe",
-              //   email: "test@example.com",
-              //   phone: "08012345678",
-              // },
+              example: {
+                name: "John",
+               
+              },
             },
           },
         },
         responses: {
           200: {
-            description: "categories updated successfully",
+            description: "skills updated successfully",
           },
           400: {
             description: "Bad request",
@@ -1825,17 +1713,17 @@ const options = {
         },
       },
     },
-    "/api/v1/categories/one/{id}": {
+    "/api/v1/skills/one/{id}": {
       get: {
-        tags: ["categories"],
-        summary: "Get a categories",
-        description: "Get a categories",
-        operationId: "getOnecategories",
+        tags: ["skills"],
+        summary: "Get a skills",
+        description: "Get a skills",
+        operationId: "getOneskills",
         parameters: [
           {
             name: "id",
             in: "path",
-            description: "categories's id",
+            description: "skills's id",
             required: true,
             schema: {
               type: "string",
@@ -1844,7 +1732,7 @@ const options = {
         ],
         responses: {
           200: {
-            description: "categories deleted successfully",
+            description: "skills deleted successfully",
           },
           400: {
             description: "Bad request",
@@ -1861,26 +1749,58 @@ const options = {
         },
       },
     },
-    "/api/v1/categories/activate/{id}": {
-      put: {
-        tags: ["categories"],
-        summary: "Activate a categories",
-        description: "Activate a categories",
-        operationId: "activatecategories",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            description: "categories's id",
-            required: true,
-            schema: {
-              type: "string",
+
+
+
+
+    
+    "/api/v1/batarian/add": {
+      post: {
+        tags: ["batarian"],
+        summary: "Add a batarian",
+        description: "Add a batarian",
+        operationId: "batarian",
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/batarian",
+              },
+              example: {
+                name: "name"
+               
+               
+              },
             },
+            required: true,
           },
-        ],
+        },
+        responses: {
+          201: {
+            description: "batarian created successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/batarian/": {
+      get: {
+        tags: ["batarian"],
+        summary: "Get a batarian",
+        description: "Get a batarian",
+        operationId: "batarian1",
+    
         responses: {
           200: {
-            description: "categories activated successfully",
+            description: "batarian deleted successfully",
           },
           400: {
             description: "Bad request",
@@ -1897,17 +1817,17 @@ const options = {
         },
       },
     },
-    "/api/v1/categories/diactivate/{id}": {
-      put: {
-        tags: ["categories"],
-        summary: "DisActivate a categories",
-        description: "DisActivate a categories",
-        operationId: "disactivatecategories",
+    "/api/v1/batarian/delete/{id}": {
+      delete: {
+        tags: ["batarian"],
+        summary: "delete a batarian",
+        description: "delete a batarian",
+        operationId: "deleteOnebatarian",
         parameters: [
           {
             name: "id",
             in: "path",
-            description: "categories's id",
+            description: "batarian's id",
             required: true,
             schema: {
               type: "string",
@@ -1916,7 +1836,92 @@ const options = {
         ],
         responses: {
           200: {
-            description: "categories disactivated successfully",
+            description: "batarian deleted successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/batarian/{id}": {
+      put: {
+        tags: ["batarian"],
+        summary: "Update a batarian",
+        description: "Update a batarian",
+        operationId: "updateOnebatarian",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "batarian's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/batarian",
+              },
+              example: {
+                name: "John",
+               
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "batarian updated successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/batarian/one/{id}": {
+      get: {
+        tags: ["batarian"],
+        summary: "Get a batarian",
+        description: "Get a batarian",
+        operationId: "getOnesbatarian",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "batarian's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          200: {
+            description: "batarian  successfully",
           },
           400: {
             description: "Bad request",
@@ -1951,7 +1956,8 @@ const options = {
               example: {
                 name: "obina",
                 description: ".......",
-                readerId:"1"
+                readerId:"1",
+                batarianId:"1"
                
               },
             },
@@ -2254,16 +2260,16 @@ const options = {
           },
         },
       },
-      Profile: {
+      sordierskills: {
         type: "object",
         properties: {
           name: {
             type: "string",
-            description: "Profile name",
+            description: "sordierskills name",
           },
-          categoryID: {
+          skillsID: {
             type: "integer",
-            description: "category integer",
+            description: "sordierskills integer",
           },
           description: {
             type: "string",
@@ -2342,16 +2348,30 @@ const options = {
             type: "integer",
             description: "readerId",
           },
+          batarianId:{
+            type: "integer",
+            description: "batarianId",
+          }
 
         },
       },
  
-      categories: {
+      skills: {
         type: "object",
         properties: {
           name: {
             type: "string",
             description: "name address",
+          },
+         
+        },
+      },
+      batarian: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            description: "name",
           },
          
         },

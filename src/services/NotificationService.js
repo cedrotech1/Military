@@ -1,3 +1,4 @@
+import { where } from "sequelize";
 import db from "../database/models/index.js";
 
 const Notification = db["Notifications"];
@@ -5,7 +6,7 @@ const Notification = db["Notifications"];
 // Get all notifications for a user
 export const getAllNotifications = async (userID) => {
   try {
-    return await Notification.findAll({ where: { userID } });
+    return await Notification.findAll({ where: {userID } });
   } catch (error) {
     console.error("Error fetching notifications:", error);
     throw error;

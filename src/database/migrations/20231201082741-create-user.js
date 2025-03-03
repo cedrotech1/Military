@@ -51,12 +51,12 @@ module.exports = {
       departmentId: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: {
-          model: "Departments",
-          key: "id",
-        },
-        onUpdate: "CASCADE",
-        onDelete: "SET NULL",
+        // references: {
+        //   model: "Departments",
+        //   key: "id",
+        // },
+        // onUpdate: "CASCADE",
+        // onDelete: "SET NULL",
       },
       armyid: {
         type: Sequelize.STRING,

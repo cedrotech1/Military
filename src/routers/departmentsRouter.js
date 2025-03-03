@@ -1,24 +1,21 @@
 import express from "express";
 import {
-  addDepartmentController,
-  DepartmentWithAllController,
-  deleteOneDepartmentController,
-  getOneDepartmentController,
-  updateOneDepartmentController,
-  getMydepartment
+   createDepartment,
+  getAllDepartments,
+  getOneDepartment,
+  MyDepartment,
+  deleteDepartment
 
 } from "../controllers/departmentController.js"; // Update the import for the CategoriesController
 import { protect } from "../middlewares/protect.js";
 
 const router = express.Router();
 
-router.delete("/delete/:id",protect, deleteOneDepartmentController);
-router.post("/add/",protect, addDepartmentController);
-router.get("/", protect,DepartmentWithAllController);
-router.get("/all",protect,  DepartmentWithAllController);
-router.get("/one/:id",protect, getOneDepartmentController);
-router.get("/user",protect, getMydepartment);
-router.put("/:id",protect, updateOneDepartmentController);
+router.delete("/delete/:id",protect, deleteDepartment);
+router.post("/add/",protect, createDepartment);
+router.get("/", protect,getAllDepartments);
+router.get("/one/:id",protect, getOneDepartment);
+router.get("/user",protect, MyDepartment);
 
 
 export default router;

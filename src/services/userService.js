@@ -10,102 +10,61 @@ const Department = db["Departments"];
 
 import Sequelize, { where } from "sequelize";
 
-export const getUsers = async () => {
-  try {
-    const allUsers = await users.findAll({
-      attributes: { exclude: ["password"] },
-      include: [
+  export const getUsers = async () => {
+    try {
+      const allUsers = await users.findAll(
         {
-          model: ProfileDetails,
-          as: "ProfileDetails",  
-          include: [
-            {
-              model: ProfileCategories,
-              as: "category", 
-            },
-          ],
+        attributes: { exclude: ["password"] },
+        include: [
+          // {
+          //   model: ProfileDetails,
+          //   as: "ProfileDetails",  
+          //   include: [
+          //     {
+          //       model: ProfileCategories,
+          //       as: "category", 
+          //     },
+          //   ],
 
-        },
-        {
-          model: Missions,
-          as: "missions",
-        },
-        {
-          model: Appointments,
-          as: "appointments",
-        },
-      
-        {
-          model: Notifications,
-          as: "notifications",
-        },
-        {
-          model: Department,
-          as: "department",
-          include: [
-            {
-              model: users,
-              as: "reader",
-              attributes: { exclude: ["password"] }, // Exclude password
-            },
-          ],
-        },
+          // },
+          {
+            model: Missions,
+            as: "missions",
+          },
+          {
+            model: Appointments,
+            as: "appointments",
+          },
         
-      ],
-    });
+          {
+            model: Notifications,
+            as: "notifications",
+          },
+          {
+            model: Department,
+            as: "department",
+            include: [
+              {
+                model: users,
+                as: "reader",
+                attributes: { exclude: ["password"] }, // Exclude password
+              },
+            ],
+          },
+          
+        ],
+      });
 
-    return allUsers;
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    throw error; // Re-throw the error to be handled by the caller
-  }
-};
+      return allUsers;
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      throw error; // Re-throw the error to be handled by the caller
+    }
+  };
 
 export const getUsers1 = async () => {
   try {
-    const allUsers = await users.findAll({
-      where:{role:'user'},
-      attributes: { exclude: ["password"] },
-      include: [
-        {
-          model: ProfileDetails,
-          as: "ProfileDetails",  
-          include: [
-            {
-              model: ProfileCategories,
-              as: "category", 
-            },
-          ],
-
-        },
-        {
-          model: Missions,
-          as: "missions",
-        },
-        {
-          model: Appointments,
-          as: "appointments",
-        },
-      
-        {
-          model: Notifications,
-          as: "notifications",
-        },
-        {
-          model: Department,
-          as: "department",
-          include: [
-            {
-              model: users,
-              as: "reader",
-              attributes: { exclude: ["password"] }, // Exclude password
-            },
-          ],
-        },
-        
-      ],
-    });
-
+    const allUsers = await users.findAll();
     return allUsers;
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -161,17 +120,6 @@ export const getUser = async (id) => {
   const user = await users.findByPk(id, {
     attributes: { exclude: ["password"] },
     include: [
-      {
-        model: ProfileDetails,
-        as: "ProfileDetails",  
-        include: [
-          {
-            model: ProfileCategories,
-            as: "category", 
-          },
-        ],
-
-      },
       {
         model: Missions,
         as: "missions",

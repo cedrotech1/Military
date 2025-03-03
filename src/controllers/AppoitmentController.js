@@ -204,11 +204,11 @@ export const deleteOneAppoitmentController = async (req, res) => {
     }
     // console.log(data[0].id);
 
-    if (userID!=data[0].assignedBY) {
-      return res.status(401).json({
-        message: "you can not modify Appoitment you dont create",
-      });
-    }
+    // if (userID!=data[0].assignedBY) {
+    //   return res.status(401).json({
+    //     message: "you can not modify Appoitment you dont create",
+    //   });
+    // }
 
 
     const Missiondata = await getOneMissionWithDetails(data[0].missionID);
@@ -346,6 +346,94 @@ export const changeAppoitmentController = async (req, res) => {
       message: "Something went wrong",
       error,
     });
+  }
+};
+
+
+
+import db from "../database/models/index.js";
+const Users = db["Users"];
+const Departments = db["Departments"];
+const Notifications = db["Notifications"];
+const Appointments = db["Appointments"];
+
+
+// const { Users, Departments, Appointments, Notifications } = require("../models");
+const { Op } = require("sequelize");
+
+// Helper function to check if the user joined more than three years ago
+const hasServedMoreThanThreeYears = (joinDate) => {
+  const threeYearsAgo = new Date();
+  threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
+  return new Date(joinDate) <= threeYearsAgo;
+};
+
+export const assignAppointments = async (req, res) => {
+  try {
+    req.body.assignedBY = req.user.id;
+    const { missionId, batarianId, assignedBY } = req.body
+    if (!missionId || !batarianId || !assignedBY) {
+      return res.status(400).json({ error: "missionId, batarianId, and assignedBY are required" });
+    }
+
+    // Get departments that belong to the specified Batarian
+    const departments = await Departments.findAll({
+      where: { batarianId },
+      attributes: ["id"], // Only fetch department IDs
+    });
+
+    if (departments.length === 0) {
+      return res.status(404).json({ message: "No departments found for this Batarian." });
+    }
+
+    const departmentIds = departments.map((dept) => dept.id);
+
+    // Fetch eligible users from those departments
+    const eligibleUsers = await Users.findAll({
+      where: {
+        role: "user",
+        departmentId: { [Op.in]: departmentIds }, // Users must belong to one of these departments
+        joindate: { [Op.lte]: new Date(new Date().setFullYear(new Date().getFullYear() - 3)) }, // Joined more than 3 years ago
+      },
+      include: [
+        {
+          model: Appointments,
+          as: "appointments",
+          required: false,
+          where: { missionID: missionId },
+        },
+      ],
+    });
+
+    // Filter out users who already have an appointment for this mission
+    const usersToAssign = eligibleUsers.filter((user) => user.appointments.length === 0);
+
+    if (usersToAssign.length === 0) {
+      return res.status(200).json({ message: "No eligible users found for assignment." });
+    }
+
+    // Assign appointments and notify users
+    const appointments = usersToAssign.map((user) => ({
+      missionID: missionId,
+      userID: user.id,
+      status: "Assigned",
+      assignedBY,
+    }));
+
+    const notifications = usersToAssign.map((user) => ({
+      userID: user.id,
+      title: "New Mission Assignment",
+      message: `You have been assigned to a new mission (ID: ${missionId}).`,
+      type: "mission",
+    }));
+
+    await Appointments.bulkCreate(appointments);
+    await Notifications.bulkCreate(notifications);
+
+    res.status(201).json({ message: "Appointments assigned successfully!", assignedUsers: usersToAssign.length });
+  } catch (error) {
+    console.error("Error assigning appointments:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 

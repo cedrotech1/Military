@@ -5,7 +5,8 @@ import {
   deleteOneAppoitmentController,
   getOneAppoitmentController,
   changeAppoitmentController,
-  getMyAppoitment
+  getMyAppoitment,
+  assignAppointments
   
 
 } from "../controllers/AppoitmentController.js";
@@ -13,6 +14,7 @@ import { protect } from "../middlewares/protect.js";
 
 const router = express.Router();
 
+router.post("/assign", protect, assignAppointments);
 router.delete("/delete/:id", protect, deleteOneAppoitmentController);
 router.post("/add/", protect, addAppoitmentController);
 router.get("/", protect, AppoitmentWithAllController);

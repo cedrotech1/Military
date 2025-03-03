@@ -277,7 +277,7 @@ export const addUser = async (req, res) => {
     newUser.password = password;
 
     // send email
-    await new Email(newUser).sendAccountAdded();
+    await new Email(newUser).sendAccountAdded(); 
 
     const notification = await createNotification({ userID:newUser.id,title:"Account created for you", message:"your account has been created successfull", type:'account', isRead: false });
     
@@ -335,15 +335,15 @@ export const getAllUsers = async (req, res) => {
 export const getUsersWithoutAppointments = async (req, res) => {
   try {
     // Fetch all users with their appointments
-    let users = await getUsers1();
+    let users = await getUsers();
 
-    // Get the current date
+    // // Get the current date
     const currentDate = new Date();
 
-    // Filter users who joined more than 3 years ago
+    // // Filter users who joined more than 3 years ago
     const threeYearsAgo = new Date(currentDate.setFullYear(currentDate.getFullYear() - 3));
 
-    const usersJoinedMoreThan3YearsAgo = users.filter(user => new Date(user.joindate) < threeYearsAgo && user.appointments.length === 0);
+    const usersJoinedMoreThan3YearsAgo = users.filter(user => new Date(user.joindate) < threeYearsAgo && user.appointments.length === 0 && user.role == 'user');
 
     if (usersJoinedMoreThan3YearsAgo.length === 0) {
       return res.status(404).json({
@@ -429,20 +429,7 @@ export const updateOneUser = async (req, res) => {
 
 export const deleteOneUser = async (req, res) => {
   try {
-    const existingUser = await getUser(req.params.id);
-    if (!existingUser) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-    if (req.user.role === "customer" && req.user.role !== "restaurentadmin") {
-      return res.status(401).json({
-        success: false,
-        message: "Not authorized",
-      });
-    }
-  
+
     const user = await deleteUser(req.params.id);
 
     return res.status(200).json({

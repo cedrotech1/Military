@@ -5,12 +5,13 @@ module.exports = {
     return queryInterface.bulkInsert("Departments", [
       {
         name: "Department 1",
-        description: "Department 1 fro batarian 23, division",
+        description: "Department 1 for Batarian 23, division",
         readerId: 2,
+        batarianId: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
-      },
-     
+      }
+  
     ]);
   },
 

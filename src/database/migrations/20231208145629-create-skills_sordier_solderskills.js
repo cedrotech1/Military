@@ -78,71 +78,9 @@ module.exports = {
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
     });
-
-    // Create Skills Table
-    await queryInterface.createTable('skills', {
-      id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-      },
-      name: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      createdAt: {
-        type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-      },
-      updatedAt: {
-        type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-      },
-    });
-
-    // Create SoldierSkills Table (Many-to-Many Relationship)
-    await queryInterface.createTable('soldierskills', {
-      id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-      },
-      soldierId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'soldiers',
-          key: 'id',
-        },
-        onDelete: 'CASCADE',
-      },
-      skillId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'skills',
-          key: 'id',
-        },
-        onDelete: 'CASCADE',
-      },
-      createdAt: {
-        type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-      },
-      updatedAt: {
-        type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-      },
-    });
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('soldierskills');
-    await queryInterface.dropTable('skills');
     await queryInterface.dropTable('soldiers');
   },
 };
