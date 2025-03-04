@@ -13,7 +13,9 @@ import {
   ResetPassword,
   getUsersWithoutAppointments,
   processAddUsers,
-  getAllUsers11
+  getAllUsers11,
+  getSordiers1,
+  getUserssor1
 } from '../controllers/userController.js';
 import { protect } from '../middlewares/protect.js';
 import multer from 'multer';
@@ -24,6 +26,10 @@ const upload = multer({ dest: 'uploads/' });
 
 router.get('/formission', protect, getUsersWithoutAppointments);
 router.get('/', protect, getAllUsers);
+
+router.get('/user', protect, getUserssor1);
+router.get('/sordire', protect, getSordiers1);
+
 router.get('/com', protect, getAllUsers11);
 router.get('/:id', protect, getOneUser);
 router.post('/addUser', protect, addUser);

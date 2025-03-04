@@ -15,7 +15,9 @@ import {
   getUserByCode,
   updateUserCode,
   getUsers1,
-  getUserByAID
+  getUserByAID,
+  getUserssor,
+  getSordier
 } from "../services/userService.js";
 import {
   createNotification,
@@ -205,61 +207,21 @@ export const changePassword = async (req, res) => {
 export const addUser = async (req, res) => {
   let role = req.user.role;
 
-  if (!req.body.role || req.body.role === "") {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide role",
-    });
-  }
-
-  if (!req.body.firstname || req.body.firstname === "") {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide firstname",
-    });
-  }
-  if (!req.body.lastname || req.body.lastname === "") {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide lastname",
-    });
-  }
-  if (!req.body.email || req.body.email === "") {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide email",
-    });
-  }
-  if (!req.body.phone || req.body.phone === "") {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide phone",
-    });
-  }
   if (role === "user") {
-      return res.status(400).json({
-        success: false,
-        message: "you are not allowed to add any user",
-      });
-    
+    return res.status(400).json({
+      success: false,
+      message: "You are not allowed to add any user",
+    });
   }
 
-  if (role === "admin") {
-    if (!req.body.role === "Commander-Officer" || !req.body.role === "user") {
-      return res.status(400).json({
-        success: false,
-        message: "you are not allowed add user lather that Commander-Officer or persenel",
-      });
-    }
-
-  }
+ 
 
   try {
     const userExist = await getUserByEmail(req.body.email);
     if (userExist) {
       return res.status(400).json({
         success: false,
-        message: "email already exist",
+        message: "Email already exists",
       });
     }
 
@@ -267,7 +229,7 @@ export const addUser = async (req, res) => {
     if (userByAID) {
       return res.status(400).json({
         success: false,
-        message: "Aarmy id already exist",
+        message: "Army ID already exists",
       });
     }
 
@@ -275,15 +237,25 @@ export const addUser = async (req, res) => {
     if (phoneExist) {
       return res.status(400).json({
         success: false,
-        message: "phone number has been used",
+        message: "Phone number has been used",
       });
     }
 
-    // generate password
-    // const password = `D${Math.random().toString(36).slice(-8)}`;
-    const password = `1234`;
+    // Generate password
+    const password = "1234";
+    const aid = Math.floor(Math.random() * 100000000); // Generates a random integer
 
-    // create user with generated password and set status to active
+    // Ensure armyid is set for specific roles
+    if (req.body.role === "admin" && !req.body.armyid) {
+      req.body.armyid = aid;
+    }
+
+    // If role is "admin", generate an armyid
+    if (!req.body.armyid) {
+      req.body.armyid = aid;
+    }
+
+    // Create user with generated password and set status to active
     req.body.password = password;
     req.body.status = "active";
     console.log(req.body);
@@ -291,11 +263,16 @@ export const addUser = async (req, res) => {
     const newUser = await createUser(req.body);
     newUser.password = password;
 
-    // send email
-    await new Email(newUser).sendAccountAdded(); 
+    // Send email
+    await new Email(newUser).sendAccountAdded();
 
-    const notification = await createNotification({ userID:newUser.id,title:"Account created for you", message:"your account has been created successfull", type:'account', isRead: false });
-    
+    const notification = await createNotification({
+      userID: newUser.id,
+      title: "Account created for you",
+      message: "Your account has been created successfully",
+      type: "account",
+      isRead: false,
+    });
 
     return res.status(201).json({
       success: true,
@@ -305,12 +282,11 @@ export const addUser = async (req, res) => {
         firstname: newUser.firstname,
         lastname: newUser.lastname,
         email: newUser.email,
-        role: newUser.role, 
+        role: newUser.role,
         departmentId: newUser.departmentId,
         rank: newUser.rank,
         armyid: newUser.armyid,
         joindate: newUser.joindate,
-
       },
     });
   } catch (error) {
@@ -322,6 +298,8 @@ export const addUser = async (req, res) => {
   }
 };
 
+
+
 export const getAllUsers = async (req, res) => {
   try { 
     let filteredusers=[];
@@ -332,6 +310,69 @@ export const getAllUsers = async (req, res) => {
     else if (req.user.role === "Commander-Officer") {
       filteredusers = users.filter(user => user.role === "user" || user.id != req.user.id && user.role != "admin");
     } 
+    return res.status(200).json({
+      success: true,
+      message: "Users retrieved successfully",
+      users:filteredusers,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
+
+export const getSordiers1 = async (req, res) => {
+  try { 
+    let filteredusers=[];
+    let users = await getUsers();
+
+      filteredusers = users.filter(user => user.role === "user" || user.role === "Commander-Officer");
+    
+    return res.status(200).json({
+      success: true,
+      message: "Users retrieved successfully",
+      users:filteredusers,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
+
+export const getUserssor1 = async (req, res) => {
+  try { 
+    
+    let filteredusers=[];
+    let users = await getUsers();
+
+      filteredusers = users.filter(user => user.role === "admin");
+    
+    return res.status(200).json({
+      success: true,
+      message: "Users retrieved successfully",
+      users:filteredusers,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
+
+
+export const getsordires = async (req, res) => {
+  try { 
+    let filteredusers=[];
+    let users = await getUserssor();
+   
     return res.status(200).json({
       success: true,
       message: "Users retrieved successfully",
@@ -462,15 +503,6 @@ export const deleteOneUser = async (req, res) => {
 export const activateOneUser = async (req, res) => {
   
   try {
-
-    // let role = req.user.role;
-    // if (role === "restaurentadmin") {
-    //   if (req.body.role === "superadmin" || req.body.role === "restaurentadmin") {
-    //     return res.status(400).json({
-    //       success: false,
-    //       message: "you are not allowed to add superadmin or restaurentadmin ",
-    //     });
-    //   }}
 
 
     const existingUser = await getUser(req.params.id);
