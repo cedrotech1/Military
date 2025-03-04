@@ -2,6 +2,8 @@ import db from "../database/models/index.js";
 const Skills = db["Skills"];
 const Batarians = db["Batarians"];
 
+const Departments=db["Departments"];
+
 
 // Create a new Batarian
 export const createBatarian = async (req, res) => {
@@ -27,16 +29,43 @@ export const createBatarian = async (req, res) => {
   }
 };
 
-// Get all Batarians
+
+
+// Get all Batarians with their corresponding Departments
 export const getAllBatarians = async (req, res) => {
   try {
-    const batarians = await Batarians.findAll();
-    return res.status(200).json({ success: true, message: "Batarians retrieved successfully", data: batarians });
+    const batarians = await Batarians.findAll({
+      include: [
+        {
+          model: Departments,
+          as: "department", // The alias defined in the model association
+          attributes: ["id", "name"], // Specify the fields you want to include from the Department model
+        },
+      ],
+    });
+
+    if (batarians.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No batarians found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Batarians retrieved successfully",
+      data: batarians,
+    });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ success: false, message: "Something went wrong", error: error.message });
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
   }
 };
+
 
 // Get one Batarian by ID
 export const getOneBatarian = async (req, res) => {

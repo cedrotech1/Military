@@ -189,6 +189,21 @@ export const getUserByPhone = async (phone) => {
   }
 };
 
+export const getUserByAID = async (armyid) => {
+  try {
+    const user = await users.findOne({
+      where: { armyid }
+
+    });
+
+    return user;
+  } catch (error) {
+    // Handle errors here
+    console.error("Error fetching user:", error);
+    throw error;
+  }
+};
+
 
 
 export const getallUsers = async () => {

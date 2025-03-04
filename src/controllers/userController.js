@@ -14,7 +14,8 @@ import {
   getUserByPhone,
   getUserByCode,
   updateUserCode,
-  getUsers1
+  getUsers1,
+  getUserByAID
 } from "../services/userService.js";
 import {
   createNotification,
@@ -31,21 +32,24 @@ const xlsx = require('xlsx');
 const fs = require('fs');
 const path = require('path');
 
+
+
+
 export const processAddUsers = async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ success: false, message: 'No file uploaded.' });
-  }
-
-  const fileExtension = path.extname(req.file.originalname);
-  if (!['.xlsx', '.xls'].includes(fileExtension)) {
-    return res.status(400).json({ success: false, message: 'Invalid file format. Please upload an Excel file.' });
-  }
-
-  const excelFilePath = req.file.path;
-  const results = [];
-  const duplicateUsers = [];
-
   try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded.' });
+    }
+
+    const fileExtension = path.extname(req.file.originalname).toLowerCase();
+    if (!['.xlsx', '.xls'].includes(fileExtension)) {
+      return res.status(400).json({ success: false, message: 'Invalid file format. Please upload an Excel file.' });
+    }
+
+    const excelFilePath = req.file.path;
+    const results = [];
+    const duplicateUsers = [];
+
     const workbook = xlsx.readFile(excelFilePath);
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
@@ -54,16 +58,15 @@ export const processAddUsers = async (req, res) => {
     const data = xlsx.utils.sheet_to_json(sheet);
 
     for (const row of data) {
-      if (!row.FIRSTNAME || !row.LASTNAME || !row.EMAIL || !row.PHONE || !row.ROLE) {
+      const firstname = row.FIRSTNAME?.trim();
+      const lastname = row.LASTNAME?.trim();
+      const email = row.EMAIL?.trim().toLowerCase();
+      const phone = row.PHONE?.toString().trim(); // Ensure phone is treated as a string
+      const role = row.ROLE?.trim();
+
+      if (!firstname || !lastname || !email || !phone || !role) {
         continue; // Skip incomplete entries
       }
-
-      const email = row.EMAIL.trim().toLowerCase();
-      const phone = row.PHONE;
-      const role = row.ROLE;
-
-
-  
 
       // Check for duplicate users
       const existingUser = await getUserByEmail(email);
@@ -72,7 +75,7 @@ export const processAddUsers = async (req, res) => {
         continue;
       }
 
-      const phoneExist = await getUserByPhone(phone.toString());
+      const phoneExist = await getUserByPhone(phone);
       if (phoneExist) {
         duplicateUsers.push(phone);
         continue;
@@ -83,8 +86,8 @@ export const processAddUsers = async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const userData = {
-        firstname: row.FIRSTNAME,
-        lastname: row.LASTNAME,
+        firstname,
+        lastname,
         phone,
         email,
         role,
@@ -95,14 +98,16 @@ export const processAddUsers = async (req, res) => {
       const newUser = await createUser(userData);
       newUser.password = password; // Temporary plain password for email notification
 
-      // Send email
-      await new Email(newUser).sendAccountAdded();
+      // Send email notification
+      if (newUser.email) {
+        await new Email(newUser).sendAccountAdded();
+      }
 
-      // Create notification
+      // Create a notification
       await createNotification({
         userID: newUser.id,
-        title: "Account created for you",
-        message: "Your account has been successfully created.",
+        title: 'Account created for you',
+        message: 'Your account has been successfully created.',
         type: 'account',
         isRead: false,
       });
@@ -123,7 +128,7 @@ export const processAddUsers = async (req, res) => {
       success: true,
       message: 'Users processed successfully.',
       createdUsers: results,
-      duplicateUsers: duplicateUsers.length > 0 ? `Duplicate users skipped: ${duplicateUsers.join(', ')}` : 'No duplicates found',
+      duplicateUsers: duplicateUsers.length > 0 ? `Duplicate users skipped: ${duplicateUsers.join(', ')}` : 'No duplicates found.',
     });
 
   } catch (error) {
@@ -131,6 +136,7 @@ export const processAddUsers = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Error processing the Excel file.', error: error.message });
   }
 };
+
 
 export const changePassword = async (req, res) => {
   console.log(req.user.id)
@@ -257,6 +263,14 @@ export const addUser = async (req, res) => {
       });
     }
 
+    const userByAID = await getUserByAID(req.body.armyid);
+    if (userByAID) {
+      return res.status(400).json({
+        success: false,
+        message: "Aarmy id already exist",
+      });
+    }
+
     const phoneExist = await getUserByPhone(req.body.phone);
     if (phoneExist) {
       return res.status(400).json({
@@ -277,7 +291,7 @@ export const addUser = async (req, res) => {
     newUser.password = password;
 
     // send email
-    await new Email(newUser).sendAccountAdded(); 
+    // await new Email(newUser).sendAccountAdded(); 
 
     const notification = await createNotification({ userID:newUser.id,title:"Account created for you", message:"your account has been created successfull", type:'account', isRead: false });
     

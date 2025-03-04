@@ -4,11 +4,11 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Departments extends Model {
     static associate(models) {
+      // A Department has many Batarians
+      Departments.hasMany(models.Batarians, { foreignKey: "departmentId", as: "batarians" });
+
       Departments.hasMany(models.Users, { foreignKey: "departmentId", as: "members" });
       Departments.belongsTo(models.Users, { foreignKey: "readerId", as: "reader" });
-
-      // New association: Each department belongs to a Batarian
-      Departments.belongsTo(models.Batarians, { foreignKey: "batarianId", as: "batarian" });
     }
   }
 
@@ -23,14 +23,6 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
         allowNull: true,
-      },
-      batarianId: {
-        type: DataTypes.INTEGER,
-        references: {
-          model: "Batarians",
-          key: "id",
-        },
-        allowNull: false,
       },
     },
     {

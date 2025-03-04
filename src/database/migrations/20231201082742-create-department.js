@@ -27,16 +27,6 @@ module.exports = {
         onUpdate: "CASCADE",
         onDelete: "SET NULL",
       },
-      batarianId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Batarians", // Ensures batarianId references the Batarians table
-          key: "id",
-        },
-        onUpdate: "CASCADE",
-        onDelete: "RESTRICT",
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

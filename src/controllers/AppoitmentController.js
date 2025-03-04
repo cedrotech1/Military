@@ -356,6 +356,7 @@ const Users = db["Users"];
 const Departments = db["Departments"];
 const Notifications = db["Notifications"];
 const Appointments = db["Appointments"];
+const Batarians = db["Batarians"];
 
 
 // const { Users, Departments, Appointments, Notifications } = require("../models");
@@ -368,72 +369,186 @@ const hasServedMoreThanThreeYears = (joinDate) => {
   return new Date(joinDate) <= threeYearsAgo;
 };
 
+// export const assignAppointments = async (req, res) => {
+//   try {
+//     req.body.assignedBY = req.user.id;
+//     const { missionId, batarianId, assignedBY } = req.body
+//     if (!missionId || !batarianId || !assignedBY) {
+//       return res.status(400).json({ error: "missionId, batarianId, and assignedBY are required" });
+//     }
+
+//      // Find the Batarian by its ID and include the department info
+//      const batarian = await Batarians.findByPk(batarianId, {
+//       include: {
+//         model: Departments,
+//         as: "department", // use the alias defined in the association
+//       },
+//     });
+
+//     // Check if the Batarian exists
+//     if (!batarian) {
+//       return res.status(404).json({ message: "Batarian not found" });
+//     }
+
+//     // Get the departmentId of the Batarian
+//     const departmentId = batarian.departmentId;
+
+//     // Find all users associated with the same departmentId
+//     const users = await Users.findAll({
+//       where: {
+//         departmentId: departmentId,
+//       },
+//     });
+
+//     // If no users are found, return an empty list
+//     if (!users.length) {
+//       return res.status(404).json({ message: "No users found in this department" });
+//     }
+
+
+
+//     const currentDate = new Date();
+
+//     // // Filter users who joined more than 3 years ago
+//     const threeYearsAgo = new Date(currentDate.setFullYear(currentDate.getFullYear() - 3));
+
+//     const usersJoinedMoreThan3YearsAgo = users.filter(user => new Date(user.joindate) < threeYearsAgo && user.appointments.length === 0 && user.role == 'user');
+
+//     if (usersJoinedMoreThan3YearsAgo.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "No users found who joined more than 3 years ago",
+//         users: []
+//       });
+//     }
+
+
+
+
+
+
+
+
+//     // Assign appointments and notify users
+//     const appointments = usersJoinedMoreThan3YearsAgo.map((user) => ({
+//       missionID: missionId,
+//       userID: user.id,
+//       status: "Assigned",
+//       assignedBY,
+//     }));
+
+//     const notifications = usersJoinedMoreThan3YearsAgo.map((user) => ({
+//       userID: user.id,
+//       title: "New Mission Assignment",
+//       message: `You have been assigned to a new mission (ID: ${missionId}).`,
+//       type: "mission",
+//     }));
+
+//     await Appointments.bulkCreate(appointments);
+//     await Notifications.bulkCreate(notifications);
+
+//     res.status(201).json({ message: "Appointments assigned successfully!", assignedUsers: usersJoinedMoreThan3YearsAgo.length });
+//   } catch (error) {
+//     console.error("Error assigning appointments:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// };
+
 export const assignAppointments = async (req, res) => {
   try {
+    console.log("Received request:", req.body);
+
     req.body.assignedBY = req.user.id;
-    const { missionId, batarianId, assignedBY } = req.body
+    const { missionId, batarianId, assignedBY } = req.body;
+
     if (!missionId || !batarianId || !assignedBY) {
+      console.log("Missing required fields");
       return res.status(400).json({ error: "missionId, batarianId, and assignedBY are required" });
     }
 
-    // Get departments that belong to the specified Batarian
-    const departments = await Departments.findAll({
-      where: { batarianId },
-      attributes: ["id"], // Only fetch department IDs
-    });
-
-    if (departments.length === 0) {
-      return res.status(404).json({ message: "No departments found for this Batarian." });
-    }
-
-    const departmentIds = departments.map((dept) => dept.id);
-
-    // Fetch eligible users from those departments
-    const eligibleUsers = await Users.findAll({
-      where: {
-        role: "user",
-        departmentId: { [Op.in]: departmentIds }, // Users must belong to one of these departments
-        joindate: { [Op.lte]: new Date(new Date().setFullYear(new Date().getFullYear() - 3)) }, // Joined more than 3 years ago
+    console.log("Fetching Batarian with ID:", batarianId);
+    const batarian = await Batarians.findByPk(batarianId, {
+      include: {
+        model: Departments,
+        as: "department", // Ensure alias matches your association
       },
-      include: [
-        {
-          model: Appointments,
-          as: "appointments",
-          required: false,
-          where: { missionID: missionId },
-        },
-      ],
     });
 
-    // Filter out users who already have an appointment for this mission
-    const usersToAssign = eligibleUsers.filter((user) => user.appointments.length === 0);
-
-    if (usersToAssign.length === 0) {
-      return res.status(200).json({ message: "No eligible users found for assignment." });
+    if (!batarian) {
+      console.log("Batarian not found");
+      return res.status(404).json({ message: "Batarian not found" });
     }
 
-    // Assign appointments and notify users
-    const appointments = usersToAssign.map((user) => ({
+    console.log("Batarian found:", batarian);
+
+    const departmentId = batarian.department?.id;
+    if (!departmentId) {
+      console.log("Department not found for Batarian");
+      return res.status(404).json({ message: "Department not found for this Batarian" });
+    }
+
+    console.log("Fetching users in department:", departmentId);
+    const users = await Users.findAll({
+      where: { departmentId },
+      include: [{ model: Appointments, as: "appointments" }],
+    });
+
+    console.log("Users in department:", users.length);
+    if (!users.length) {
+      return res.status(404).json({ message: "No users found in this department" });
+    }
+
+    const currentDate = new Date();
+    const threeYearsAgo = new Date();
+    threeYearsAgo.setFullYear(currentDate.getFullYear() - 3);
+
+    console.log("Filtering users who joined more than 3 years ago...");
+    const usersJoinedMoreThan3YearsAgo = users.filter(
+      (user) =>
+        new Date(user.joindate) < threeYearsAgo &&
+        user.appointments?.length === 0 &&
+        user.role === "user"
+    );
+
+    console.log("Users eligible for assignment:", usersJoinedMoreThan3YearsAgo.length);
+    if (usersJoinedMoreThan3YearsAgo.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No users found who joined more than 3 years ago",
+        users: [],
+      });
+    }
+
+    console.log("Creating appointment assignments...");
+    const appointments = usersJoinedMoreThan3YearsAgo.map((user) => ({
       missionID: missionId,
       userID: user.id,
       status: "Assigned",
       assignedBY,
     }));
 
-    const notifications = usersToAssign.map((user) => ({
+    console.log("Creating notifications...");
+    const notifications = usersJoinedMoreThan3YearsAgo.map((user) => ({
       userID: user.id,
       title: "New Mission Assignment",
       message: `You have been assigned to a new mission (ID: ${missionId}).`,
       type: "mission",
     }));
 
+    console.log("Saving appointments...");
     await Appointments.bulkCreate(appointments);
+
+    console.log("Saving notifications...");
     await Notifications.bulkCreate(notifications);
 
-    res.status(201).json({ message: "Appointments assigned successfully!", assignedUsers: usersToAssign.length });
+    console.log("Successfully assigned appointments!");
+    res.status(201).json({
+      message: "Appointments assigned successfully!",
+      assignedUsers: usersJoinedMoreThan3YearsAgo.length,
+    });
+
   } catch (error) {
     console.error("Error assigning appointments:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
