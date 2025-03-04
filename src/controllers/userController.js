@@ -291,7 +291,7 @@ export const addUser = async (req, res) => {
     newUser.password = password;
 
     // send email
-    // await new Email(newUser).sendAccountAdded(); 
+    await new Email(newUser).sendAccountAdded(); 
 
     const notification = await createNotification({ userID:newUser.id,title:"Account created for you", message:"your account has been created successfull", type:'account', isRead: false });
     
