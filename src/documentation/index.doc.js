@@ -230,6 +230,42 @@ const options = {
         },
       },
     },
+    "/api/v1/users/batarian/{id}": {
+      get: {
+        tags: ["Users"],
+        summary: "Get a user batarian",
+        description: "Get a user batarian",
+        operationId: "getOneUserbatarian",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "User's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          200: {
+            description: "User deleted successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
 
     "/api/v1/users/update/{id}": {
       put: {
@@ -1919,6 +1955,32 @@ const options = {
             },
           },
         ],
+        responses: {
+          200: {
+            description: "batarian  successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/batarian/users": {
+      get: {
+        tags: ["batarian"],
+        summary: "Get a batarian users",
+        description: "Get a batarian users",
+        operationId: "getOnesbatarianusers",
+      
         responses: {
           200: {
             description: "batarian  successfully",

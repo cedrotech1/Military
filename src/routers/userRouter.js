@@ -15,7 +15,8 @@ import {
   processAddUsers,
   getAllUsers11,
   getSordiers1,
-  getUserssor1
+  getUserssor1,
+  getUsersFromBatarian
 } from '../controllers/userController.js';
 import { protect } from '../middlewares/protect.js';
 import multer from 'multer';
@@ -26,7 +27,7 @@ const upload = multer({ dest: 'uploads/' });
 
 router.get('/formission', protect, getUsersWithoutAppointments);
 router.get('/', protect, getAllUsers);
-
+router.get('/batarian/:id', protect, getUsersFromBatarian);
 router.get('/user', protect, getUserssor1);
 router.get('/sordire', protect, getSordiers1);
 

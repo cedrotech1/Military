@@ -17,7 +17,8 @@ import {
   getUsers1,
   getUserByAID,
   getUserssor,
-  getSordier
+  getSordier,
+  createUserS
 } from "../services/userService.js";
 import {
   createNotification,
@@ -204,6 +205,8 @@ export const changePassword = async (req, res) => {
   }
 };
 
+import moment from "moment"; // Import moment.js for date validation
+
 export const addUser = async (req, res) => {
   let role = req.user.role;
 
@@ -213,8 +216,6 @@ export const addUser = async (req, res) => {
       message: "You are not allowed to add any user",
     });
   }
-
- 
 
   try {
     const userExist = await getUserByEmail(req.body.email);
@@ -241,32 +242,44 @@ export const addUser = async (req, res) => {
       });
     }
 
+    // Validate join date
+    const today = moment().startOf("day"); // Get today's date
+    const joinDate = moment(req.body.joindate, "YYYY-MM-DD"); // Convert input date
+
+    if (!joinDate.isValid()) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid join date format. Use YYYY-MM-DD.",
+      });
+    }
+
+    if (joinDate.isAfter(today)) {
+      return res.status(400).json({
+        success: false,
+        message: "Join date cannot be in the future.",
+      });
+    }
+
     // Generate password
     const password = "1234";
-    const aid = Math.floor(Math.random() * 100000000); // Generates a random integer
-
-    // Ensure armyid is set for specific roles
-    if (req.body.role === "admin" && !req.body.armyid) {
-      req.body.armyid = aid;
-    }
-
-    // If role is "admin", generate an armyid
-    if (!req.body.armyid) {
-      req.body.armyid = aid;
-    }
-
+  
+ 
     // Create user with generated password and set status to active
     req.body.password = password;
-    req.body.status = "active";
-    console.log(req.body);
+    // req.body.status = "active";
+    req.body.hasappoitment = "no";
 
     const newUser = await createUser(req.body);
     newUser.password = password;
 
+    if(req.body.role=='user' || req.body.role=='Commander-Officer'){
+      const newUser1 = await createUserS(req.body);
+    }
+
     // Send email
     await new Email(newUser).sendAccountAdded();
 
-    const notification = await createNotification({
+    await createNotification({
       userID: newUser.id,
       title: "Account created for you",
       message: "Your account has been created successfully",
@@ -299,6 +312,26 @@ export const addUser = async (req, res) => {
 };
 
 
+export const getUsersFromBatarian = async (req, res) => {
+  try { 
+    let filteredusers=[];
+    let users = await getUsers();
+
+      filteredusers = users.filter(user => user.batarianId == req.params.id);
+    
+    return res.status(200).json({
+      success: true,
+      message: "Users retrieved successfully",
+      users:filteredusers,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
 
 export const getAllUsers = async (req, res) => {
   try { 

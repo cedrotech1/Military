@@ -14,8 +14,8 @@ export const getNotificationsController = async (req, res) => {
     const notifications = await getAllNotifications(userID);
 
     if (!notifications.length) {
-      return res.status(404).json({ 
-        success: false, 
+      return res.status(200).json({ 
+        success: true, 
         message: "No notifications found",
         unreadCount: 0,
         notifications: []

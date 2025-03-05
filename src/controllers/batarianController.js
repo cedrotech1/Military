@@ -1,8 +1,35 @@
 import db from "../database/models/index.js";
 const Skills = db["Skills"];
 const Batarians = db["Batarians"];
-
+const Users = db["Users"];
 const Departments=db["Departments"];
+
+
+export const getBatarianWithUsers = async (req, res) => {
+  try {
+    const batarians = await Batarians.findAll({
+      include: [
+        {
+          model: Users,
+          as: "users",  // Make sure this matches the alias you defined in the model associations
+          attributes: ["id", "firstname", "lastname", "email", "phone"], // Customize the fields you want to include
+        },
+      ],
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: batarians,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch Batarians with users',
+    });
+  }
+};
+
 
 
 // Create a new Batarian
@@ -28,21 +55,26 @@ export const createBatarian = async (req, res) => {
     return res.status(500).json({ success: false, message: "Something went wrong", error: error.message });
   }
 };
+   const { Op, Sequelize } = require("sequelize");
 
 
+// import { Sequelize } from "sequelize";
 
 // Get all Batarians with their corresponding Departments
 export const getAllBatarians = async (req, res) => {
   try {
+ 
     const batarians = await Batarians.findAll({
       include: [
         {
           model: Departments,
-          as: "department", // The alias defined in the model association
-          attributes: ["id", "name"], // Specify the fields you want to include from the Department model
-        },
+          as: "department",
+          attributes: ["id", "name"],
+        }
       ],
     });
+    
+    
 
     if (batarians.length === 0) {
       return res.status(404).json({
@@ -67,6 +99,7 @@ export const getAllBatarians = async (req, res) => {
 };
 
 
+
 // Get one Batarian by ID
 export const getOneBatarian = async (req, res) => {
   try {
@@ -76,7 +109,15 @@ export const getOneBatarian = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid Batarian ID" });
     }
 
-    const batarian = await Batarians.findByPk(id);
+    const batarian = await Batarians.findByPk(id,{
+      include: [
+        {
+          model: Departments,
+          as: "department",
+          attributes: ["id", "name"],
+        }
+      ],
+    });
 
     if (!batarian) {
       return res.status(404).json({ success: false, message: "Batarian not found" });

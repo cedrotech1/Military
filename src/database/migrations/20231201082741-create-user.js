@@ -58,12 +58,20 @@ module.exports = {
         // onUpdate: "CASCADE",
         // onDelete: "SET NULL",
       },
+      batarianId:{
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       armyid: {
         type: Sequelize.STRING,
         allowNull: true,
       },
       joindate: {
         type: Sequelize.DATE,
+        allowNull: true,
+      },
+      hasappoitment:{
+        type: Sequelize.STRING,
         allowNull: true,
       },
       rank: {

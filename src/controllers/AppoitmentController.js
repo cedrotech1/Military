@@ -24,11 +24,10 @@ import Email from "../utils/mailer.js";
 
 export const addAppoitmentController = async (req, res) => {
   try {
-   req.body.assignedBY=req.user.id;
-      req.body.status = "active";
-   const userID = req.user.id; // Get logged-in user's ID
-   let missionID=req.body.missionID;
-
+    req.body.assignedBY = req.user.id;
+    req.body.status = "active";
+    const userID = req.user.id; // Get logged-in user's ID
+    let missionID = req.body.missionID;
 
     if (!req.body.userID) {
       return res.status(400).json({
@@ -47,15 +46,16 @@ export const addAppoitmentController = async (req, res) => {
     const data = await getOneMissionWithDetails(missionID);
     if (!data) {
       return res.status(404).json({
-        message: "mission detail not found",
+        message: "Mission detail not found",
       });
     }
 
-    if (data.status=="inactive") {
+    if (data.status == "inactive") {
       return res.status(404).json({
-        message: "mission is not active",
+        message: "Mission is not active",
       });
     }
+
     const user = await getUser(req.body.userID);
     if (!user) {
       return res.status(404).json({
@@ -63,41 +63,51 @@ export const addAppoitmentController = async (req, res) => {
         message: "User not found",
       });
     }
-    if (user.status!="active") {
+    
+    if (user.status != "active") {
       return res.status(404).json({
-        message: "user is not active",
+        message: "User is not active",
       });
     }
 
- 
-    // console.log(data)
     let claim = {
-      message: "",
-      missionname: "",
-      missionstartdate: "",
-      missionlocation: "",
-      missionenddate: ""
+      message: "You have been assigned to a new mission. Please go to the system to see more details now!",
+      missionname: data.name,
+      missionstartdate: data.start_date,
+      missionlocation: data.location,
+      missionenddate: data.end_date
     };
-    
-    // Assign values to properties
-    claim.message = "you have assigned to new mission please go to sytem to see more details now !";
-    claim.missionname = data.name;
-    claim.missionstartdate = data.start_date;
-    claim.missionlocation = data.location;
-    claim.missionenddate = data.end_date;
-    
-    const newAppoitment = await createAppoitment(req.body);
-    await new Email(user,claim).sendNotification();
-     const notification = await createNotification({ userID:user.id,title:"New appoitment", message:"you have new assigned mission appoitment", type:'Alert', isRead: false });
-        
 
+    console.log("Creating appointment...");
+    const newAppoitment = await createAppoitment(req.body);
+
+    console.log("Sending email notification...");
+    await new Email(user, claim).sendNotification();
+
+    console.log("Creating in-app notification...");
+    await createNotification({ 
+      userID: user.id, 
+      title: "New Appointment", 
+      message: "You have a new assigned mission appointment", 
+      type: "Alert", 
+      isRead: false 
+    });
+
+    console.log("Updating hasAppointment status...");
+    await Users.update(
+      { hasAppointment: "yes" },
+      { where: { id: user.id } }
+    );
+
+    console.log("Appointment successfully created!");
     return res.status(201).json({
       success: true,
-      message: "Appoitment created successfully",
-      Appoitment: newAppoitment,
+      message: "Appointment created successfully",
+      Appointment: newAppoitment,
     });
+    
   } catch (error) {
-    console.error(error);
+    console.error("Error creating appointment:", error);
     return res.status(500).json({
       success: false,
       message: "Something went wrong",
@@ -105,6 +115,7 @@ export const addAppoitmentController = async (req, res) => {
     });
   }
 };
+
 
 
 export const AppoitmentWithAllController = async (req, res) => {
@@ -369,91 +380,6 @@ const hasServedMoreThanThreeYears = (joinDate) => {
   return new Date(joinDate) <= threeYearsAgo;
 };
 
-// export const assignAppointments = async (req, res) => {
-//   try {
-//     req.body.assignedBY = req.user.id;
-//     const { missionId, batarianId, assignedBY } = req.body
-//     if (!missionId || !batarianId || !assignedBY) {
-//       return res.status(400).json({ error: "missionId, batarianId, and assignedBY are required" });
-//     }
-
-//      // Find the Batarian by its ID and include the department info
-//      const batarian = await Batarians.findByPk(batarianId, {
-//       include: {
-//         model: Departments,
-//         as: "department", // use the alias defined in the association
-//       },
-//     });
-
-//     // Check if the Batarian exists
-//     if (!batarian) {
-//       return res.status(404).json({ message: "Batarian not found" });
-//     }
-
-//     // Get the departmentId of the Batarian
-//     const departmentId = batarian.departmentId;
-
-//     // Find all users associated with the same departmentId
-//     const users = await Users.findAll({
-//       where: {
-//         departmentId: departmentId,
-//       },
-//     });
-
-//     // If no users are found, return an empty list
-//     if (!users.length) {
-//       return res.status(404).json({ message: "No users found in this department" });
-//     }
-
-
-
-//     const currentDate = new Date();
-
-//     // // Filter users who joined more than 3 years ago
-//     const threeYearsAgo = new Date(currentDate.setFullYear(currentDate.getFullYear() - 3));
-
-//     const usersJoinedMoreThan3YearsAgo = users.filter(user => new Date(user.joindate) < threeYearsAgo && user.appointments.length === 0 && user.role == 'user');
-
-//     if (usersJoinedMoreThan3YearsAgo.length === 0) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "No users found who joined more than 3 years ago",
-//         users: []
-//       });
-//     }
-
-
-
-
-
-
-
-
-//     // Assign appointments and notify users
-//     const appointments = usersJoinedMoreThan3YearsAgo.map((user) => ({
-//       missionID: missionId,
-//       userID: user.id,
-//       status: "Assigned",
-//       assignedBY,
-//     }));
-
-//     const notifications = usersJoinedMoreThan3YearsAgo.map((user) => ({
-//       userID: user.id,
-//       title: "New Mission Assignment",
-//       message: `You have been assigned to a new mission (ID: ${missionId}).`,
-//       type: "mission",
-//     }));
-
-//     await Appointments.bulkCreate(appointments);
-//     await Notifications.bulkCreate(notifications);
-
-//     res.status(201).json({ message: "Appointments assigned successfully!", assignedUsers: usersJoinedMoreThan3YearsAgo.length });
-//   } catch (error) {
-//     console.error("Error assigning appointments:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// };
-
 export const assignAppointments = async (req, res) => {
   try {
     console.log("Received request:", req.body);
@@ -470,7 +396,7 @@ export const assignAppointments = async (req, res) => {
     const batarian = await Batarians.findByPk(batarianId, {
       include: {
         model: Departments,
-        as: "department", // Ensure alias matches your association
+        as: "department",
       },
     });
 
@@ -479,17 +405,9 @@ export const assignAppointments = async (req, res) => {
       return res.status(404).json({ message: "Batarian not found" });
     }
 
-    console.log("Batarian found:", batarian);
-
-    const departmentId = batarian.department?.id;
-    if (!departmentId) {
-      console.log("Department not found for Batarian");
-      return res.status(404).json({ message: "Department not found for this Batarian" });
-    }
-
-    console.log("Fetching users in department:", departmentId);
+    console.log("Fetching users in batarian:", batarianId);
     const users = await Users.findAll({
-      where: { departmentId },
+      where: { batarianId },
       include: [{ model: Appointments, as: "appointments" }],
     });
 
@@ -507,7 +425,8 @@ export const assignAppointments = async (req, res) => {
       (user) =>
         new Date(user.joindate) < threeYearsAgo &&
         user.appointments?.length === 0 &&
-        user.role === "user"
+        user.role === "user" &&
+        user.status === "active"
     );
 
     console.log("Users eligible for assignment:", usersJoinedMoreThan3YearsAgo.length);
@@ -540,6 +459,13 @@ export const assignAppointments = async (req, res) => {
 
     console.log("Saving notifications...");
     await Notifications.bulkCreate(notifications);
+
+    console.log("Updating hasAppointment status for assigned users...");
+    await Users.update(
+      { hasAppointment: "yes" },
+      { where: { id: usersJoinedMoreThan3YearsAgo.map(user => user.id) } }
+    );
+    console.log("User status updated successfully!");
 
     console.log("Successfully assigned appointments!");
     res.status(201).json({

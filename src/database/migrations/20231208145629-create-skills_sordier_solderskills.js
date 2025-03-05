@@ -1,9 +1,7 @@
-'use strict';
-
+"use strict";
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // Create Soldiers Table
-    await queryInterface.createTable('soldiers', {
+    await queryInterface.createTable("Soldiers", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -23,12 +21,17 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
+     
+      password: {
+        type: Sequelize.STRING,
+        allowNull: false, // Removed unique constraint
+      },
       phone: {
         type: Sequelize.STRING,
         unique: true,
       },
       gender: {
-        type: Sequelize.ENUM('Male', 'Female', 'Other'),
+        type: Sequelize.ENUM("Male", "Female", "Other"),
       },
       role: {
         type: Sequelize.STRING,
@@ -48,12 +51,16 @@ module.exports = {
       departmentId: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: {
-          model: 'Departments',
-          key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
+        // references: {
+        //   model: "Departments",
+        //   key: "id",
+        // },
+        // onUpdate: "CASCADE",
+        // onDelete: "SET NULL",
+      },
+      batarianId:{
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       armyid: {
         type: Sequelize.STRING,
@@ -63,6 +70,10 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true,
       },
+      hasappoitment:{
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       rank: {
         type: Sequelize.STRING,
         allowNull: true,
@@ -70,17 +81,16 @@ module.exports = {
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        defaultValue: Sequelize.fn("NOW"),
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        defaultValue: Sequelize.fn("NOW"),
       },
     });
   },
-
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('soldiers');
+    await queryInterface.dropTable("Soldiers");
   },
 };

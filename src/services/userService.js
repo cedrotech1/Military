@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import db from "../database/models/index.js";
 const users = db["Users"];
+const Soldiers = db["Soldiers"];
 const ProfileDetails = db["ProfileDetails"];
 const Notifications = db["Notifications"];
 const ProfileCategories = db["ProfileCategories"];
@@ -203,6 +204,15 @@ export const createUser = async (user) => {
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);
   const newUser = await users.create(user);
+  return newUser;
+};
+
+
+export const createUserS = async (user) => {
+  // hashing password
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(user.password, salt);
+  const newUser = await Soldiers.create(user);
   return newUser;
 };
 

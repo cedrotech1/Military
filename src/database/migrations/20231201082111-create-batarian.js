@@ -17,12 +17,12 @@ module.exports = {
       departmentId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: {
-          model: "Departments", // Ensures Batarians belong to a Department
-          key: "id",
-        },
-        onUpdate: "CASCADE",
-        onDelete: "RESTRICT",
+        // references: {
+        //   model: "Departments", // Ensures Batarians belong to a Department
+        //   key: "id",
+        // },
+        // onUpdate: "CASCADE",
+        // onDelete: "RESTRICT",
       },
       createdAt: {
         allowNull: false,

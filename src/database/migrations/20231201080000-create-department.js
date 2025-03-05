@@ -20,12 +20,12 @@ module.exports = {
       readerId: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: {
-          model: "Users", // Ensures readerId references the Users table
-          key: "id",
-        },
-        onUpdate: "CASCADE",
-        onDelete: "SET NULL",
+        // references: {
+        //   model: "Users",
+        //   key: "id",
+        // },
+        // onUpdate: "CASCADE",
+        // onDelete: "SET NULL",
       },
       createdAt: {
         allowNull: false,

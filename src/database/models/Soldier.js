@@ -1,19 +1,19 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Users extends Model {
+  class Soldiers extends Model {
     static associate(models) {
-      Users.hasMany(models.SordierSkills, { foreignKey: "userID", as: "userskills" });
-      Users.hasMany(models.Missions, { foreignKey: "createdBY", as: "missions" });
-      Users.hasMany(models.Appointments, { foreignKey: "userID", as: "appointments" });
-      Users.hasMany(models.Appointments, { foreignKey: "assignedBY", as: "assignedAppointments" });
-      Users.hasMany(models.Notifications, { foreignKey: "userID", as: "notifications" });
-      Users.belongsTo(models.Departments, { foreignKey: "departmentId", as: "department" });
-      Users.belongsTo(models.Batarians, { foreignKey: "batarianId", as: "batarian" });
+      Soldiers.hasMany(models.SordierSkills, { foreignKey: "userID", as: "Soldierskills" });
+      Soldiers.hasMany(models.Missions, { foreignKey: "createdBY", as: "missions" });
+      Soldiers.hasMany(models.Appointments, { foreignKey: "userID", as: "appointments" });
+      Soldiers.hasMany(models.Appointments, { foreignKey: "assignedBY", as: "assignedAppointments" });
+      Soldiers.hasMany(models.Notifications, { foreignKey: "userID", as: "notifications" });
+      Soldiers.belongsTo(models.Departments, { foreignKey: "departmentId", as: "department" });
+      Soldiers.belongsTo(models.Batarians, { foreignKey: "batarianId", as: "batarian" });
 
     }
   }
-  Users.init(
+  Soldiers.init(
     {
       
       firstname: DataTypes.STRING,
@@ -51,8 +51,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "Users",
+      modelName: "Soldiers",
     }
   );
-  return Users;
+  return Soldiers;
 };
