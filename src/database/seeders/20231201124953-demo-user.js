@@ -28,7 +28,7 @@ module.exports = {
         joindate: '2020-12-01',
         gender: "Male",
         address: "huye/tumba",
-        image: 'https://res.cloudinary.com/dzl8xve8s/image/upload/v1739974089/Card/tpfxwscg5hfek50yitjc.png',
+        image: 'https://res.cloudinary.com/dzl8xve8s/image/upload/v1741206951/Card/ujbahwp0xomyjllmt2ld.png',
         createdAt: new Date(),
         updatedAt: new Date(),
       },

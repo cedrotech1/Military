@@ -413,14 +413,14 @@ export const assignAppointments = async (req, res) => {
 
     console.log("Users in department:", users.length);
     if (!users.length) {
-      return res.status(404).json({ message: "No users found in this department" });
+      return res.status(404).json({ message: "No users found in this batarian" });
     }
 
     const currentDate = new Date();
     const threeYearsAgo = new Date();
     threeYearsAgo.setFullYear(currentDate.getFullYear() - 3);
 
-    console.log("Filtering users who joined more than 3 years ago...");
+    console.log("Filtering users who joined more than 3 years ago ");
     const usersJoinedMoreThan3YearsAgo = users.filter(
       (user) =>
         new Date(user.joindate) < threeYearsAgo &&
@@ -433,7 +433,7 @@ export const assignAppointments = async (req, res) => {
     if (usersJoinedMoreThan3YearsAgo.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No users found who joined more than 3 years ago",
+        message: "No active soldiers found who joined more than 3 years ago",
         users: [],
       });
     }
