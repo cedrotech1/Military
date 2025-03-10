@@ -26,71 +26,77 @@ export const addAppoitmentController = async (req, res) => {
   try {
     req.body.assignedBY = req.user.id;
     req.body.status = "active";
-    const userID = req.user.id; // Get logged-in user's ID
-    let missionID = req.body.missionID;
+    const userID = req.body.userID;
+    const missionID = req.body.missionID;
 
-    if (!req.body.userID) {
-      return res.status(400).json({
-        success: false,
-        message: "User is required",
-      });
+    if (!userID) {
+      return res.status(400).json({ success: false, message: "User is required" });
     }
 
-    if (!req.body.missionID) {
-      return res.status(400).json({
-        success: false,
-        message: "Mission is required",
-      });
+    if (!missionID) {
+      return res.status(400).json({ success: false, message: "Mission is required" });
     }
 
+    // Fetch mission details
     const data = await getOneMissionWithDetails(missionID);
     if (!data) {
-      return res.status(404).json({
-        message: "Mission detail not found",
-      });
+      return res.status(404).json({ message: "Mission detail not found" });
+    }
+    if (data.status === "inactive") {
+      return res.status(404).json({ message: "Mission is not active" });
     }
 
-    if (data.status == "inactive") {
-      return res.status(404).json({
-        message: "Mission is not active",
-      });
-    }
-
-    const user = await getUser(req.body.userID);
+    // Fetch user details
+    const user = await getUser(userID);
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-    
-    if (user.status != "active") {
-      return res.status(404).json({
-        message: "User is not active",
-      });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
+    // Check if user is active
+    if (user.status !== "active") {
+      return res.status(400).json({ message: "User is not active" });
+    }
+
+    // Check if user is a soldier (assuming "user" role is for soldiers)
+    if (user.role !== "user") {
+      return res.status(400).json({ message: "User is not eligible (Not a soldier)" });
+    }
+
+    // Check if user has at least 3 years of service
+    const threeYearsAgo = new Date();
+    threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
+    if (new Date(user.joindate) > threeYearsAgo) {
+      return res.status(400).json({ message: "User is not eligible (Less than 3 years of service)" });
+    }
+
+    // Check if user already has an appointment
+    const existingAppointment = await Appointments.findOne({ where: { userID, status: "Assigned" } });
+    if (existingAppointment) {
+      return res.status(400).json({ message: "User already has an assigned appointment" });
+    }
+
+    // Proceed with appointment creation
     let claim = {
       message: "You have been assigned to a new mission. Please go to the system to see more details now!",
       missionname: data.name,
       missionstartdate: data.start_date,
       missionlocation: data.location,
-      missionenddate: data.end_date
+      missionenddate: data.end_date,
     };
 
     console.log("Creating appointment...");
-    const newAppoitment = await createAppoitment(req.body);
+    const newAppointment = await createAppoitment(req.body);
 
     console.log("Sending email notification...");
     await new Email(user, claim).sendNotification();
 
     console.log("Creating in-app notification...");
-    await createNotification({ 
-      userID: user.id, 
-      title: "New Appointment", 
-      message: "You have a new assigned mission appointment", 
-      type: "Alert", 
-      isRead: false 
+    await createNotification({
+      userID: user.id,
+      title: "New Appointment",
+      message: "You have a new assigned mission appointment",
+      type: "Alert",
+      isRead: false,
     });
 
     console.log("Updating hasAppointment status...");
@@ -103,9 +109,9 @@ export const addAppoitmentController = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Appointment created successfully",
-      Appointment: newAppoitment,
+      Appointment: newAppointment,
     });
-    
+
   } catch (error) {
     console.error("Error creating appointment:", error);
     return res.status(500).json({
@@ -115,6 +121,7 @@ export const addAppoitmentController = async (req, res) => {
     });
   }
 };
+
 
 
 
@@ -420,26 +427,44 @@ export const assignAppointments = async (req, res) => {
     const threeYearsAgo = new Date();
     threeYearsAgo.setFullYear(currentDate.getFullYear() - 3);
 
-    console.log("Filtering users who joined more than 3 years ago ");
-    const usersJoinedMoreThan3YearsAgo = users.filter(
-      (user) =>
-        new Date(user.joindate) < threeYearsAgo &&
-        user.appointments?.length === 0 &&
-        user.role === "user" &&
-        user.status === "active"
-    );
+    console.log("Filtering users who joined more than 3 years ago");
+    const usersEligible = [];
+    const usersNotAssigned = [];
 
-    console.log("Users eligible for assignment:", usersJoinedMoreThan3YearsAgo.length);
-    if (usersJoinedMoreThan3YearsAgo.length === 0) {
+    for (const user of users) {
+      if (new Date(user.joindate) < threeYearsAgo) {
+        if (user.status !== "active") {
+          usersNotAssigned.push({ id: user.id, hasappoitment: "Not active" });
+        } else if (user.role !== "user") {  
+          usersNotAssigned.push({ id: user.id, hasappoitment: "Not Soldier" });
+        } else if (user.appointments && user.appointments.length > 0) {  
+          // User already has an appointment, skip them
+          usersNotAssigned.push({ id: user.id, hasappoitment: "Already appointed" });
+        } else {
+          usersEligible.push(user);
+        }
+      } else {
+        usersNotAssigned.push({ id: user.id, hasappoitment: "Less than 3 years of service" });
+      }
+    }
+
+    console.log("Users eligible for assignment:", usersEligible.length);
+    if (usersEligible.length === 0) {
+      for (const user of usersNotAssigned) {
+        await Users.update(
+          { hasappoitment: user.hasappoitment },
+          { where: { id: user.id } }
+        );
+      }
       return res.status(404).json({
         success: false,
-        message: "No active soldiers found who joined more than 3 years ago",
-        users: [],
+        message: "No eligible users found for assignment",
+        usersNotAssigned,
       });
     }
 
     console.log("Creating appointment assignments...");
-    const appointments = usersJoinedMoreThan3YearsAgo.map((user) => ({
+    const appointments = usersEligible.map(user => ({
       missionID: missionId,
       userID: user.id,
       status: "Assigned",
@@ -447,7 +472,7 @@ export const assignAppointments = async (req, res) => {
     }));
 
     console.log("Creating notifications...");
-    const notifications = usersJoinedMoreThan3YearsAgo.map((user) => ({
+    const notifications = usersEligible.map(user => ({
       userID: user.id,
       title: "New Mission Assignment",
       message: `You have been assigned to a new mission (ID: ${missionId}).`,
@@ -460,21 +485,30 @@ export const assignAppointments = async (req, res) => {
     console.log("Saving notifications...");
     await Notifications.bulkCreate(notifications);
 
-    console.log("Updating hasAppointment status for assigned users...");
+    console.log("Updating hasappoitment status for assigned users...");
     await Users.update(
-      { hasAppointment: "yes" },
-      { where: { id: usersJoinedMoreThan3YearsAgo.map(user => user.id) } }
+      { hasappoitment: "yes" },  
+      { where: { id: usersEligible.map(user => user.id) } }
     );
-    console.log("User status updated successfully!");
 
+    for (const user of usersNotAssigned) {
+      await Users.update(
+        { hasappoitment: user.hasappoitment },  
+        { where: { id: user.id } }
+      );
+    }
+
+    console.log("User status updated successfully!");
     console.log("Successfully assigned appointments!");
     res.status(201).json({
       message: "Appointments assigned successfully!",
-      assignedUsers: usersJoinedMoreThan3YearsAgo.length,
+      assignedUsers: usersEligible.length,
+      usersNotAssigned,
     });
-
   } catch (error) {
     console.error("Error assigning appointments:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+

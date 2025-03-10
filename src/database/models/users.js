@@ -10,7 +10,6 @@ module.exports = (sequelize, DataTypes) => {
       Users.hasMany(models.Notifications, { foreignKey: "userID", as: "notifications" });
       Users.belongsTo(models.Departments, { foreignKey: "departmentId", as: "department" });
       Users.belongsTo(models.Batarians, { foreignKey: "batarianId", as: "batarian" });
-
     }
   }
   Users.init(
@@ -47,6 +46,7 @@ module.exports = (sequelize, DataTypes) => {
       rank: DataTypes.STRING,
       armyid: DataTypes.STRING,
       joindate: DataTypes.STRING,
+      
 
     },
     {

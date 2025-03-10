@@ -207,6 +207,13 @@ export const changePassword = async (req, res) => {
 
 import moment from "moment"; // Import moment.js for date validation
 
+import db from "../database/models/index.js";
+const Users = db["Users"];
+const Departments = db["Departments"];
+const Notifications = db["Notifications"];
+const Appointments = db["Appointments"];
+const Batarians = db["Batarians"];
+
 export const addUser = async (req, res) => {
   let role = req.user.role;
 
@@ -262,12 +269,29 @@ export const addUser = async (req, res) => {
 
     // Generate password
     const password = "1234";
+
+     // Check the number of users in the specified batarian
+     const batarianUserCount = await Users.count({
+      where: {
+        batarianId: req.body.batarianId,
+      },
+    });
+
+    const maxUsers = 10; // Set the maximum number of users allowed in this batarian
+
+    if (batarianUserCount >= maxUsers) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot add more than ${maxUsers} users to this Batarian.`,
+      });
+    }
+
   
  
     // Create user with generated password and set status to active
     req.body.password = password;
     // req.body.status = "active";
-    req.body.hasappoitment = "no";
+    req.body.hasappoitment = "no yet assigned";
 
     const newUser = await createUser(req.body);
     newUser.password = password;

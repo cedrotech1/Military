@@ -112,7 +112,7 @@ export const getOneBatarian = async (req, res) => {
     const batarian = await Batarians.findByPk(id,{
       include: [
         {
-          model: Departments,
+          model: Departments, 
           as: "department",
           attributes: ["id", "name"],
         }
