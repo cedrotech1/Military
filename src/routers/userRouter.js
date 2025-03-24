@@ -1,4 +1,8 @@
 import express from 'express';
+import path from 'path';
+import fs from 'fs';
+
+import multer from 'multer';
 import {
   addUser,
   deleteOneUser,
@@ -16,15 +20,17 @@ import {
   getAllUsers11,
   getSordiers1,
   getUserssor1,
-  getUsersFromBatarian
+  getUsersFromBatarian,
+  uploadExcel,
 } from '../controllers/userController.js';
 import { protect } from '../middlewares/protect.js';
-import multer from 'multer';
+
 const router = express.Router();
 
-const upload = multer({ dest: 'uploads/' });
 
-router.get('/upload/file', upload.single('file'),express.json(),processAddUsers);
+router.post('/upload-excel', processAddUsers);
+
+// router.get('/upload/file', upload1.single('file'),express.json(),processAddUsers);
 router.get('/formission', protect, getUsersWithoutAppointments);
 router.get('/', protect, getAllUsers);
 router.get('/batarian/:id', protect, getUsersFromBatarian);

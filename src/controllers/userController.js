@@ -39,199 +39,117 @@ const Notifications = db["Notifications"];
 const Appointments = db["Appointments"];
 const Batarians = db["Batarians"];
 
+import XLSX from "xlsx";
+import fs from "fs";
+import path from "path";
+// import moment from "moment";
 
-const xlsx = require('xlsx');
-const fs = require('fs');
-const path = require('path');
 export const processAddUsers = async (req, res) => {
   try {
-    if (!req.file) {
-      console.log('No file uploaded.');
-      return res.status(400).json({ success: false, message: 'No file uploaded !.' });
+    if (!req.files || !req.files.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded!" });
     }
 
-    const fileExtension = path.extname(req.file.originalname).toLowerCase();
+    const file = req.files.file;
+    const filePath = file.tempFilePath || file.path;
+    const fileExtension = path.extname(file.name).toLowerCase();
+
     if (!['.xlsx', '.xls'].includes(fileExtension)) {
-      console.log('Invalid file format. Please upload an Excel file.');
-      return res.status(400).json({ success: false, message: 'Invalid file format. Please upload an Excel file.' });
+      return res.status(400).json({ success: false, message: "Invalid file format. Please upload an Excel file." });
     }
 
-    const excelFilePath = req.file.path;
+    const workbook = XLSX.readFile(filePath);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(sheet);
+
+    console.log("Data read from the Excel file:", data);
+
     const results = [];
     const duplicateUsers = [];
 
-    const workbook = xlsx.readFile(excelFilePath);
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const data = xlsx.utils.sheet_to_json(sheet);
-
-    console.log('Data read from the Excel file:', data);
-
     for (const row of data) {
-      const firstname = row.FIRSTNAME?.trim();
-      const lastname = row.LASTNAME?.trim();
-      const email = row.EMAIL?.trim().toLowerCase();
-      const phone = row.PHONE?.toString().trim();
-      const role = row.ROLE?.trim();
-      let departmentId = parseInt(row.DEPARTMENTID, 10);
-      let rank = row.RANK?.trim().toLowerCase();
-      let armyid = parseInt(row.ARMYID, 10);
-      const joindate = row.JOINDATE?.trim();
-      let batarianId = row.BATARIANID;
-
-     // Ensure all fields are checked and fail early if any are invalid
-if (
-  !firstname || 
-  !lastname || 
-  !email || 
-  !phone || 
-  !role || 
-  isNaN(departmentId) || 
-  isNaN(armyid) || 
-  !rank || 
-  !joindate || 
-  !batarianId
-) {
-  const errorMessages = [];
-
-  if (!firstname) errorMessages.push('First name is missing');
-  if (!lastname) errorMessages.push('Last name is missing');
-  if (!email) errorMessages.push('Email is missing');
-  if (!phone) errorMessages.push('Phone number is missing');
-  if (!role) errorMessages.push('Role is missing');
-  if (isNaN(departmentId)) errorMessages.push('Invalid Department ID');
-  if (isNaN(armyid)) errorMessages.push('Invalid Army ID');
-  if (!rank) errorMessages.push('Rank missing');
-  if (!joindate) errorMessages.push('Join date is missing');
-  if (!batarianId) errorMessages.push('Batarian ID is missing');
-
-  console.log(`Skipping entry due to missing/invalid fields: ${JSON.stringify(row)} - Reasons: ${errorMessages.join(', ')}`);
-  continue; // Skip incomplete or invalid entries
-}
-
-
-      // Validate Department
-      const departmentExists = await Departments.findOne({ where: { id: departmentId } });
-      if (!departmentExists) {
-        console.log(`Invalid Department ID: ${departmentId}`);
-        continue;
-      }
-
-      // Check for duplicate users
-      const existingUser = await getUserByEmail(email);
-      if (existingUser) {
-        console.log(`Duplicate found: Email ${email}`);
-        duplicateUsers.push(`Email: ${email}`);
-        continue;
-      }
-
-      const phoneExist = await getUserByPhone(phone);
-      if (phoneExist) {
-        console.log(`Duplicate found: Phone ${phone}`);
-        duplicateUsers.push(`Phone: ${phone}`);
-        continue;
-      }
-
-      const armyIdExist = await getUserByAID(String(armyid));
-      if (armyIdExist) {
-        console.log(`Duplicate found: Army ID ${armyid}`);
-        duplicateUsers.push(`Army ID: ${armyid}`);
-        continue;
-      }
-
-      console.log('done here')
-
-      // Validate joindate
-      const joinDateMoment = moment(joindate, 'YYYY-MM-DD', true);
-      if (!joinDateMoment.isValid()) {
-        console.log(`Invalid Date Format: ${joindate}`);
-        duplicateUsers.push(`Invalid Date Format: ${joindate}`);
-        continue;
-      }
-
-      if (joinDateMoment.isAfter(moment())) {
-        console.log(`Future Join Date: ${joindate}`);
-        duplicateUsers.push(`Future Join Date: ${joindate}`);
-        continue;
-      }
-
-      // Check Batarian user count
-       batarianId=String(batarianId);
-      const batarianUserCount = await Users.count({ where: { batarianId } });
-      if (batarianUserCount >= 10) {
-        console.log(`Max Users in Batarian: ${batarianId}`);
-        duplicateUsers.push(`Max Users in Batarian: ${batarianId}`);
-        continue;
-      }
-
-      // Generate password
-      const password = `D${Math.random().toString(36).slice(-8)}`;
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      const userData = {
-        firstname,
-        lastname,
-        phone,
-        email,
-        role,
-        departmentId,
-        rank,
-        armyid,
-        joindate,
-        batarianId,
-        password: hashedPassword,
-        status: 'active',
-        hasappoitment: 'not yet assigned',
+      const user = {
+        firstname: row.FIRSTNAME?.trim(),
+        lastname: row.LASTNAME?.trim(),
+        email: row.EMAIL?.trim().toLowerCase(),
+        phone: row.PHONE?.toString().trim(),
+        role: row.ROLE?.trim(),
+        departmentId: parseInt(row.DEPARTMENTID, 10),
+        rank: row.RANK?.trim().toLowerCase(),
+        armyid: parseInt(row.ARMYID, 10),
+        joindate: row.JOINDATE?.trim(),
+        batarianId: String(row.BATARIANID),
       };
 
-      // Create user
-      const newUser = await createUser(userData);
-      newUser.password = password; // For email notification
-
-      console.log('Created user:', newUser);
-
-      // Send email and notification
-      if (newUser.email) {
-        await new Email(newUser).sendAccountAdded();
+      const missingFields = Object.entries(user).filter(([key, value]) => !value && ['email', 'phone', 'firstname', 'lastname', 'role', 'rank', 'departmentId', 'armyid', 'joindate', 'batarianId'].includes(key));
+      if (missingFields.length) {
+        console.log(`Skipping entry due to missing/invalid fields: ${JSON.stringify(row)} - Missing: ${missingFields.map(([key]) => key).join(', ')}`);
+        continue;
       }
+
+      if (!(await Departments.findOne({ where: { id: user.departmentId } }))) {
+        console.log(`Invalid Department ID: ${user.departmentId}`);
+        continue;
+      }
+
+      if (await getUserByEmail(user.email)) {
+        duplicateUsers.push(`Email: ${user.email}`);
+        continue;
+      }
+      if (await getUserByPhone(user.phone)) {
+        duplicateUsers.push(`Phone: ${user.phone}`);
+        continue;
+      }
+      if (await getUserByAID(String(user.armyid))) {
+        duplicateUsers.push(`Army ID: ${user.armyid}`);
+        continue;
+      }
+
+      const joinDateMoment = moment(user.joindate, 'YYYY-MM-DD', true);
+      if (!joinDateMoment.isValid() || joinDateMoment.isAfter(moment())) {
+        duplicateUsers.push(`Invalid Join Date: ${user.joindate}`);
+        continue;
+      }
+
+      if ((await Users.count({ where: { batarianId: user.batarianId } })) >= 10) {
+        duplicateUsers.push(`Max Users in Batarian: ${user.batarianId}`);
+        continue;
+      }
+
+      user.password = await bcrypt.hash(`D${Math.random().toString(36).slice(-8)}`, 10);
+      user.status = "active";
+      user.hasappoitment = "not yet assigned";
+
+      const newUser = await createUser(user);
+      console.log("Created user:", newUser);
+
+      if (newUser.email) await new Email(newUser).sendAccountAdded();
 
       await createNotification({
         userID: newUser.id,
-        title: 'Account created for you',
-        message: 'Your account has been successfully created.',
-        type: 'account',
+        title: "Account created for you",
+        message: "Your account has been successfully created.",
+        type: "account",
         isRead: false,
       });
 
-      results.push({
-        id: newUser.id,
-        firstname: newUser.firstname,
-        lastname: newUser.lastname,
-        email: newUser.email,
-        role: newUser.role,
-        departmentId: newUser.departmentId,
-        rank: newUser.rank,
-        armyid: newUser.armyid,
-        joindate: newUser.joindate,
-        batarianId: newUser.batarianId,
-      });
+      results.push(newUser);
     }
 
-    fs.unlinkSync(excelFilePath);
+    fs.unlinkSync(filePath);
+    console.log("Finished processing. Results:", results);
 
-    console.log('Finished processing. Results:', results);
     return res.json({
       success: true,
-      message: 'Users processed successfully.',
+      message: "Users processed successfully.",
       createdUsers: results,
-      duplicateUsers: duplicateUsers.length > 0 ? `Skipped duplicates: ${duplicateUsers.join(', ')}` : 'No duplicates found.',
+      duplicateUsers: duplicateUsers.length ? `Skipped duplicates: ${duplicateUsers.join(", ")}` : "No duplicates found.",
     });
   } catch (error) {
-    console.error('Error processing the Excel file:', error.message);
-    return res.status(500).json({ success: false, message: 'Error processing the Excel file.', error: error.message });
+    console.error("Error processing the Excel file:", error.message);
+    return res.status(500).json({ success: false, message: "Error processing the Excel file.", error: error.message });
   }
 };
-
 
 
 
