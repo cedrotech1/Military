@@ -30,22 +30,29 @@ import {
 
 } from "../services/departmentService.js";
 import imageUploader from "../helpers/imageUplouder.js";
+import moment from "moment"; // Import moment.js for date validation
+
+import db from "../database/models/index.js";
+const Users = db["Users"];
+const Departments = db["Departments"];
+const Notifications = db["Notifications"];
+const Appointments = db["Appointments"];
+const Batarians = db["Batarians"];
+
 
 const xlsx = require('xlsx');
 const fs = require('fs');
 const path = require('path');
-
-
-
-
 export const processAddUsers = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No file uploaded.' });
+      console.log('No file uploaded.');
+      return res.status(400).json({ success: false, message: 'No file uploaded !.' });
     }
 
     const fileExtension = path.extname(req.file.originalname).toLowerCase();
     if (!['.xlsx', '.xls'].includes(fileExtension)) {
+      console.log('Invalid file format. Please upload an Excel file.');
       return res.status(400).json({ success: false, message: 'Invalid file format. Please upload an Excel file.' });
     }
 
@@ -56,35 +63,108 @@ export const processAddUsers = async (req, res) => {
     const workbook = xlsx.readFile(excelFilePath);
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
-
-    // Convert the sheet to JSON
     const data = xlsx.utils.sheet_to_json(sheet);
+
+    console.log('Data read from the Excel file:', data);
 
     for (const row of data) {
       const firstname = row.FIRSTNAME?.trim();
       const lastname = row.LASTNAME?.trim();
       const email = row.EMAIL?.trim().toLowerCase();
-      const phone = row.PHONE?.toString().trim(); // Ensure phone is treated as a string
+      const phone = row.PHONE?.toString().trim();
       const role = row.ROLE?.trim();
+      let departmentId = parseInt(row.DEPARTMENTID, 10);
+      let rank = row.RANK?.trim().toLowerCase();
+      let armyid = parseInt(row.ARMYID, 10);
+      const joindate = row.JOINDATE?.trim();
+      let batarianId = row.BATARIANID;
 
-      if (!firstname || !lastname || !email || !phone || !role) {
-        continue; // Skip incomplete entries
+     // Ensure all fields are checked and fail early if any are invalid
+if (
+  !firstname || 
+  !lastname || 
+  !email || 
+  !phone || 
+  !role || 
+  isNaN(departmentId) || 
+  isNaN(armyid) || 
+  !rank || 
+  !joindate || 
+  !batarianId
+) {
+  const errorMessages = [];
+
+  if (!firstname) errorMessages.push('First name is missing');
+  if (!lastname) errorMessages.push('Last name is missing');
+  if (!email) errorMessages.push('Email is missing');
+  if (!phone) errorMessages.push('Phone number is missing');
+  if (!role) errorMessages.push('Role is missing');
+  if (isNaN(departmentId)) errorMessages.push('Invalid Department ID');
+  if (isNaN(armyid)) errorMessages.push('Invalid Army ID');
+  if (!rank) errorMessages.push('Rank missing');
+  if (!joindate) errorMessages.push('Join date is missing');
+  if (!batarianId) errorMessages.push('Batarian ID is missing');
+
+  console.log(`Skipping entry due to missing/invalid fields: ${JSON.stringify(row)} - Reasons: ${errorMessages.join(', ')}`);
+  continue; // Skip incomplete or invalid entries
+}
+
+
+      // Validate Department
+      const departmentExists = await Departments.findOne({ where: { id: departmentId } });
+      if (!departmentExists) {
+        console.log(`Invalid Department ID: ${departmentId}`);
+        continue;
       }
 
       // Check for duplicate users
       const existingUser = await getUserByEmail(email);
       if (existingUser) {
-        duplicateUsers.push(email);
+        console.log(`Duplicate found: Email ${email}`);
+        duplicateUsers.push(`Email: ${email}`);
         continue;
       }
 
       const phoneExist = await getUserByPhone(phone);
       if (phoneExist) {
-        duplicateUsers.push(phone);
+        console.log(`Duplicate found: Phone ${phone}`);
+        duplicateUsers.push(`Phone: ${phone}`);
         continue;
       }
 
-      // Generate a secure password
+      const armyIdExist = await getUserByAID(String(armyid));
+      if (armyIdExist) {
+        console.log(`Duplicate found: Army ID ${armyid}`);
+        duplicateUsers.push(`Army ID: ${armyid}`);
+        continue;
+      }
+
+      console.log('done here')
+
+      // Validate joindate
+      const joinDateMoment = moment(joindate, 'YYYY-MM-DD', true);
+      if (!joinDateMoment.isValid()) {
+        console.log(`Invalid Date Format: ${joindate}`);
+        duplicateUsers.push(`Invalid Date Format: ${joindate}`);
+        continue;
+      }
+
+      if (joinDateMoment.isAfter(moment())) {
+        console.log(`Future Join Date: ${joindate}`);
+        duplicateUsers.push(`Future Join Date: ${joindate}`);
+        continue;
+      }
+
+      // Check Batarian user count
+       batarianId=String(batarianId);
+      const batarianUserCount = await Users.count({ where: { batarianId } });
+      if (batarianUserCount >= 10) {
+        console.log(`Max Users in Batarian: ${batarianId}`);
+        duplicateUsers.push(`Max Users in Batarian: ${batarianId}`);
+        continue;
+      }
+
+      // Generate password
       const password = `D${Math.random().toString(36).slice(-8)}`;
       const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -94,19 +174,27 @@ export const processAddUsers = async (req, res) => {
         phone,
         email,
         role,
+        departmentId,
+        rank,
+        armyid,
+        joindate,
+        batarianId,
         password: hashedPassword,
         status: 'active',
+        hasappoitment: 'not yet assigned',
       };
 
+      // Create user
       const newUser = await createUser(userData);
-      newUser.password = password; // Temporary plain password for email notification
+      newUser.password = password; // For email notification
 
-      // Send email notification
+      console.log('Created user:', newUser);
+
+      // Send email and notification
       if (newUser.email) {
         await new Email(newUser).sendAccountAdded();
       }
 
-      // Create a notification
       await createNotification({
         userID: newUser.id,
         title: 'Account created for you',
@@ -121,24 +209,34 @@ export const processAddUsers = async (req, res) => {
         lastname: newUser.lastname,
         email: newUser.email,
         role: newUser.role,
+        departmentId: newUser.departmentId,
+        rank: newUser.rank,
+        armyid: newUser.armyid,
+        joindate: newUser.joindate,
+        batarianId: newUser.batarianId,
       });
     }
 
-    // Remove the uploaded file after processing
     fs.unlinkSync(excelFilePath);
 
+    console.log('Finished processing. Results:', results);
     return res.json({
       success: true,
       message: 'Users processed successfully.',
       createdUsers: results,
-      duplicateUsers: duplicateUsers.length > 0 ? `Duplicate users skipped: ${duplicateUsers.join(', ')}` : 'No duplicates found.',
+      duplicateUsers: duplicateUsers.length > 0 ? `Skipped duplicates: ${duplicateUsers.join(', ')}` : 'No duplicates found.',
     });
-
   } catch (error) {
     console.error('Error processing the Excel file:', error.message);
     return res.status(500).json({ success: false, message: 'Error processing the Excel file.', error: error.message });
   }
 };
+
+
+
+
+
+
 
 
 export const changePassword = async (req, res) => {
@@ -205,14 +303,6 @@ export const changePassword = async (req, res) => {
   }
 };
 
-import moment from "moment"; // Import moment.js for date validation
-
-import db from "../database/models/index.js";
-const Users = db["Users"];
-const Departments = db["Departments"];
-const Notifications = db["Notifications"];
-const Appointments = db["Appointments"];
-const Batarians = db["Batarians"];
 
 export const addUser = async (req, res) => {
   let role = req.user.role;

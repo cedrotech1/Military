@@ -24,7 +24,7 @@ const router = express.Router();
 
 const upload = multer({ dest: 'uploads/' });
 
-
+router.get('/upload/file', upload.single('file'),express.json(),processAddUsers);
 router.get('/formission', protect, getUsersWithoutAppointments);
 router.get('/', protect, getAllUsers);
 router.get('/batarian/:id', protect, getUsersFromBatarian);
