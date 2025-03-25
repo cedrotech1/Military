@@ -62,6 +62,7 @@ module.exports = {
         armyid: "1234561",
         joindate: '2020-12-01',
         password: hashedPasswordPersonel,
+        hasappoitment :"no yet assigned",
         departmentId: 1,
         batarianId:1,
         gender: "Male",
