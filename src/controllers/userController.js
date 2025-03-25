@@ -44,6 +44,7 @@ import fs from "fs";
 import path from "path";
 // import moment from "moment";
 
+
 export const processAddUsers = async (req, res) => {
   try {
     if (!req.files || !req.files.file) {
@@ -54,7 +55,7 @@ export const processAddUsers = async (req, res) => {
     const filePath = file.tempFilePath || file.path;
     const fileExtension = path.extname(file.name).toLowerCase();
 
-    if (!['.xlsx', '.xls'].includes(fileExtension)) {
+    if (![".xlsx", ".xls"].includes(fileExtension)) {
       return res.status(400).json({ success: false, message: "Invalid file format. Please upload an Excel file." });
     }
 
@@ -69,29 +70,36 @@ export const processAddUsers = async (req, res) => {
 
     for (const row of data) {
       const user = {
-        firstname: row.FIRSTNAME?.trim(),
-        lastname: row.LASTNAME?.trim(),
-        email: row.EMAIL?.trim().toLowerCase(),
-        phone: row.PHONE?.toString().trim(),
-        role: row.ROLE?.trim(),
-        departmentId: parseInt(row.DEPARTMENTID, 10),
-        rank: row.RANK?.trim().toLowerCase(),
-        armyid: parseInt(row.ARMYID, 10),
-        joindate: row.JOINDATE?.trim(),
-        batarianId: String(row.BATARIANID),
+        firstname: row.FIRSTNAME?.trim() || null,
+        lastname: row.LASTNAME?.trim() || null,
+        email: row.EMAIL?.trim().toLowerCase() || null,
+        phone: row.PHONE ? String(row.PHONE).trim() : null,
+        role: row.ROLE?.trim() || null,
+        departmentId: row.DEPARTMENTID ? parseInt(row.DEPARTMENTID, 10) : null,
+        rank: row.RANK?.trim().toLowerCase() || null,
+        armyid: row.ARMYID ? parseInt(row.ARMYID, 10) : null,
+        joindate: row.JOINDATE && !isNaN(row.JOINDATE) 
+          ? new Date((row.JOINDATE - 25569) * 86400000).toISOString().split("T")[0] 
+          : null,
+        batarianId: row.BATARIANID ? String(row.BATARIANID) : null,
       };
 
-      const missingFields = Object.entries(user).filter(([key, value]) => !value && ['email', 'phone', 'firstname', 'lastname', 'role', 'rank', 'departmentId', 'armyid', 'joindate', 'batarianId'].includes(key));
+      // Check for missing required fields
+      const requiredFields = ["email", "phone", "firstname", "lastname", "role", "rank", "departmentId", "armyid", "joindate", "batarianId"];
+      const missingFields = requiredFields.filter(field => !user[field]);
+
       if (missingFields.length) {
-        console.log(`Skipping entry due to missing/invalid fields: ${JSON.stringify(row)} - Missing: ${missingFields.map(([key]) => key).join(', ')}`);
+        console.log(`Skipping entry due to missing/invalid fields: ${JSON.stringify(row)} - Missing: ${missingFields.join(", ")}`);
         continue;
       }
 
+      // Validate department
       if (!(await Departments.findOne({ where: { id: user.departmentId } }))) {
         console.log(`Invalid Department ID: ${user.departmentId}`);
         continue;
       }
 
+      // Check for duplicate users
       if (await getUserByEmail(user.email)) {
         duplicateUsers.push(`Email: ${user.email}`);
         continue;
@@ -105,26 +113,39 @@ export const processAddUsers = async (req, res) => {
         continue;
       }
 
-      const joinDateMoment = moment(user.joindate, 'YYYY-MM-DD', true);
+      // Validate join date
+      const joinDateMoment = moment(user.joindate, "YYYY-MM-DD", true);
       if (!joinDateMoment.isValid() || joinDateMoment.isAfter(moment())) {
         duplicateUsers.push(`Invalid Join Date: ${user.joindate}`);
         continue;
       }
 
+      // Limit users in a specific Batarian
       if ((await Users.count({ where: { batarianId: user.batarianId } })) >= 10) {
         duplicateUsers.push(`Max Users in Batarian: ${user.batarianId}`);
         continue;
       }
 
+      // Generate password
       user.password = await bcrypt.hash(`D${Math.random().toString(36).slice(-8)}`, 10);
       user.status = "active";
       user.hasappoitment = "not yet assigned";
 
+      // Create the user
       const newUser = await createUser(user);
       console.log("Created user:", newUser);
 
-      if (newUser.email) await new Email(newUser).sendAccountAdded();
+      // Handle role-specific actions
+      if (user.role === "user" || user.role === "Commander-Officer") {
+        await createUserS(user); // Pass user instead of req.body
+      }
 
+      // Send account creation email
+      if (newUser.email) {
+        await new Email(newUser).sendAccountAdded();
+      }
+
+      // Create notification
       await createNotification({
         userID: newUser.id,
         title: "Account created for you",
@@ -136,6 +157,7 @@ export const processAddUsers = async (req, res) => {
       results.push(newUser);
     }
 
+    // Delete the uploaded file after processing
     fs.unlinkSync(filePath);
     console.log("Finished processing. Results:", results);
 
