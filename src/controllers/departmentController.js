@@ -23,7 +23,8 @@ export const getAllDepartments = async (req, res) => {
   }
 };
 
-// Get a single department by ID
+
+// Get a single department by ID..
 export const getOneDepartment = async (req, res) => {
   try {
     const { id } = req.params;
