@@ -127,7 +127,7 @@ export const processAddUsers = async (req, res) => {
       }
 
       // Generate password
-      user.password = await bcrypt.hash(`D${Math.random().toString(36).slice(-8)}`, 10);
+      user.password = await bcrypt.hash(`1234`, 10);
       user.status = "active";
       user.hasappoitment = "not yet assigned";
 
